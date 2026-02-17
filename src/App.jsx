@@ -10,6 +10,7 @@ import CartPage from './pages/customer/CartPage'
 import CheckoutPage from './pages/customer/CheckoutPage'
 import OrdersPage from './pages/customer/OrdersPage'
 import OrderDetailPage from './pages/customer/OrderDetailPage'
+import ProfilePage from './pages/customer/ProfilePage'
 
 // Admin Pages
 import AdminDashboard from './pages/admin/AdminDashboard'
@@ -100,9 +101,15 @@ function AppRoutes() {
         </CartProvider>
       } />
       
-      <Route path="/order/:id" element={
+<Route path="/order/:id" element={
         <CartProvider>
           <OrderDetailPage />
+        </CartProvider>
+      } />
+      
+      <Route path="/profile" element={
+        <CartProvider>
+          <ProfilePage />
         </CartProvider>
       } />
 
