@@ -37,10 +37,15 @@ export const AuthProvider = ({ children }) => {
   const fetchProfile = async (userId) => {
     try {
       const { data, error } = await supabase
-        .from('users')
+        .from('profiles')
         .select('*')
         .eq('id', userId)
         .single()
+
+      if (error) {
+        console.error('Error fetching profile:', error)
+        return
+      }
 
       if (data) {
         setProfile(data)
@@ -50,15 +55,21 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
-  const signUp = async (email, password, name, phone, role = USER_ROLES.CUSTOMER) => {
+
+  const signUp = async (email, password, options = {}, role = USER_ROLES.CUSTOMER) => {
     try {
+      // Handle both old format (name, phone, role) and new format (options, role)
+      const name = options.name || options
+      const phone = options.phone
+      
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
           data: {
             name,
-            phone
+            phone,
+            role
           }
         }
       })
@@ -66,13 +77,7 @@ export const AuthProvider = ({ children }) => {
       if (error) throw error
 
       if (data.user) {
-        await supabase.from('users').insert({
-          id: data.user.id,
-          email,
-          name,
-          phone,
-          role
-        })
+        // Profile will be created automatically by the trigger, but we set local state
         setUser(data.user)
         setProfile({ id: data.user.id, email, name, phone, role })
       }

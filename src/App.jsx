@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from './context/AuthContext'
+import { USER_ROLES } from './lib/supabase'
 import { CartProvider } from './context/CartContext'
 import { OrderProvider } from './context/OrderContext'
 
@@ -39,7 +40,7 @@ const ProtectedRoute = ({ children, adminOnly = false }) => {
     return <Navigate to="/login" replace />
   }
 
-  if (adminOnly && profile?.role !== 'admin') {
+  if (adminOnly && profile?.role !== USER_ROLES.ADMIN) {
     return <Navigate to="/" replace />
   }
 
@@ -66,7 +67,7 @@ function AppRoutes() {
     <Routes>
       {/* Auth Routes */}
       <Route path="/login" element={
-        user ? <Navigate to={profile?.role === 'admin' ? '/admin' : '/'} replace /> 
+        user ? <Navigate to={profile?.role === USER_ROLES.ADMIN ? '/admin' : '/'} replace /> 
              : <LoginPage />
       } />
 

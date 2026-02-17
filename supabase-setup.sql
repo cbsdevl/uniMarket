@@ -220,6 +220,35 @@ INSERT INTO suppliers (name, contact_person, phone, email, address) VALUES
 ('Digital Gadgets Store', 'Claude Niyonkuru', '+250788345678', 'claude@digitalgadgets.rw', 'Kigali, Rwanda')
 ON CONFLICT DO NOTHING;
 
--- Insert sample admin user (you need to create this user through Supabase Auth UI)
--- The profile will be created automatically when user signs up with role 'admin'
--- Then you can update their role manually in Supabase Dashboard
+-- Create default admin user
+-- Note: Run this after setting up the database. The password will be hashed by Supabase Auth.
+-- If the user already exists, this will be skipped.
+
+-- First, create the admin user in auth.users (this requires supabase_admin or service role)
+-- You can also create this through Supabase Dashboard Auth UI with email: admin@demo.com, password: demo123
+-- Then run this to ensure the profile has admin role:
+
+INSERT INTO auth.users (id, email, encrypted_password, email_confirmed_at, raw_app_meta_data, raw_user_meta_data, created_at, updated_at)
+VALUES (
+  'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
+  'admin@demo.com',
+  crypt('demo123', gen_salt('bf')),
+  NOW(),
+  '{"provider":"email","providers":["email"]}',
+  '{"name":"Admin User","role":"admin"}',
+  NOW(),
+  NOW()
+)
+ON CONFLICT (id) DO NOTHING;
+
+-- Ensure admin profile exists with correct role
+INSERT INTO profiles (id, email, name, role, created_at, updated_at)
+VALUES (
+  'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
+  'admin@demo.com',
+  'Admin User',
+  'admin',
+  NOW(),
+  NOW()
+)
+ON CONFLICT (id) DO UPDATE SET role = 'admin';

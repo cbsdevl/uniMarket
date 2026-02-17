@@ -26,7 +26,8 @@ const AdminDelivery = () => {
             *,
             product:products (*)
           ),
-          user:users (name, email)
+          user:profiles (name, email)
+
         `)
         .in('status', ['SOURCED', 'OUT_FOR_DELIVERY'])
         .order('created_at', { ascending: false })

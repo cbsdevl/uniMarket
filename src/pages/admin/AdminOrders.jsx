@@ -27,7 +27,8 @@ const AdminOrders = () => {
             *,
             product:products (*)
           ),
-          user:users (name, email)
+          user:profiles (name, email)
+
         `)
         .order('created_at', { ascending: false })
 

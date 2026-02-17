@@ -1,14 +1,17 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Mail, Lock, Eye, EyeOff, GraduationCap } from 'lucide-react'
 import Button from '../../components/common/Button'
 import Input from '../../components/common/Input'
 import Card from '../../components/common/Card'
 import { useAuth } from '../../context/AuthContext'
+import { USER_ROLES } from '../../lib/supabase'
+
 
 const LoginPage = () => {
   const navigate = useNavigate()
-  const { signIn, signUp } = useAuth()
+  const { signIn, signUp, user, profile } = useAuth()
+
   
   const [isLogin, setIsLogin] = useState(true)
   const [loading, setLoading] = useState(false)
@@ -19,9 +22,23 @@ const LoginPage = () => {
     name: '',
     phone: ''
   })
+
+
   const [error, setError] = useState('')
 
+  // Handle navigation after successful login when profile is loaded
+  useEffect(() => {
+    if (user && profile) {
+      if (profile.role === USER_ROLES.ADMIN) {
+        navigate('/admin', { replace: true })
+      } else {
+        navigate('/', { replace: true })
+      }
+    }
+  }, [user, profile, navigate])
+
   const handleSubmit = async (e) => {
+
     e.preventDefault()
     setError('')
     setLoading(true)
@@ -164,7 +181,7 @@ const LoginPage = () => {
         </Card>
 
         <p className="text-center text-blue-200 text-xs mt-6">
-          © 2024 UniMarket. All rights reserved.
+          © 2025 UniMarket. All rights reserved.
         </p>
       </div>
     </div>
