@@ -1,12 +1,15 @@
-// Categories
-export const CATEGORIES = [
-  { id: 'all', name: 'All', icon: 'Grid' },
-  { id: 'flash-disks', name: 'Flash Disks', icon: 'HardDrive' },
-  { id: 'chargers', name: 'Chargers', icon: 'Zap' },
-  { id: 'notes', name: 'Notes', icon: 'BookOpen' },
-  { id: 'power-banks', name: 'Power Banks', icon: 'Battery' },
-  { id: 'others', name: 'Others', icon: 'Package' }
+// Categories - Default categories (used as fallback when DB is unavailable)
+export const DEFAULT_CATEGORIES = [
+  { id: 'flash-disks', name: 'Flash Disks', slug: 'flash-disks', icon: 'HardDrive', display_order: 1 },
+  { id: 'chargers', name: 'Chargers', slug: 'chargers', icon: 'Zap', display_order: 2 },
+  { id: 'notes', name: 'Notes', slug: 'notes', icon: 'BookOpen', display_order: 3 },
+  { id: 'power-banks', name: 'Power Banks', slug: 'power-banks', icon: 'Battery', display_order: 4 },
+  { id: 'others', name: 'Others', slug: 'others', icon: 'Package', display_order: 5 }
 ]
+
+// Legacy export for backward compatibility
+export const CATEGORIES = DEFAULT_CATEGORIES
+
 
 // Order status labels and colors
 export const ORDER_STATUS_CONFIG = {

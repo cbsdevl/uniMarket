@@ -19,6 +19,11 @@ export const formatDate = (date) => {
   }).format(new Date(date))
 }
 
+// Format relative time (alias for formatDistanceToNow)
+export const formatDistanceToNow = (date) => {
+  return formatRelativeTime(date)
+}
+
 // Format relative time
 export const formatRelativeTime = (date) => {
   const now = new Date()

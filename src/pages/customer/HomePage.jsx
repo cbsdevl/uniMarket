@@ -4,18 +4,38 @@ import Header from '../../components/layout/Header'
 import BottomNav from '../../components/layout/BottomNav'
 import ProductGrid from '../../components/products/ProductGrid'
 import { supabase } from '../../lib/supabase'
-import { CATEGORIES } from '../../utils/constants'
+import { DEFAULT_CATEGORIES } from '../../utils/constants'
 
 const HomePage = () => {
   const [products, setProducts] = useState([])
+  const [categories, setCategories] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('all')
 
   useEffect(() => {
+    fetchCategories()
     fetchProducts()
   }, [selectedCategory])
+
+
+  const fetchCategories = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('categories')
+        .select('*')
+        .eq('is_active', true)
+        .order('display_order', { ascending: true })
+
+      if (error) throw error
+      setCategories(data || [])
+    } catch (err) {
+      console.error('Error fetching categories:', err)
+      // Fallback to default categories
+      setCategories(DEFAULT_CATEGORIES)
+    }
+  }
 
   const fetchProducts = async () => {
     setLoading(true)
@@ -27,7 +47,10 @@ const HomePage = () => {
         .eq('is_active', true)
 
       if (selectedCategory !== 'all') {
-        query = query.eq('category', selectedCategory)
+        // Find category name from slug
+        const category = categories.find(c => c.slug === selectedCategory)
+        const categoryName = category ? category.name : selectedCategory
+        query = query.eq('category', categoryName)
       }
 
       const { data, error } = await query
@@ -41,6 +64,7 @@ const HomePage = () => {
       setLoading(false)
     }
   }
+
 
   const filteredProducts = products.filter(product =>
     product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -65,12 +89,22 @@ const HomePage = () => {
       {/* Categories */}
       <div className="sticky top-[57px] z-30 bg-white border-b border-gray-100">
         <div className="flex gap-2 px-4 py-3 overflow-x-auto scrollbar-hide">
-          {CATEGORIES.map((category) => (
+          <button
+            onClick={() => setSelectedCategory('all')}
+            className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+              selectedCategory === 'all'
+                ? 'bg-blue-600 text-white'
+                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+            }`}
+          >
+            All
+          </button>
+          {(categories.length > 0 ? categories : DEFAULT_CATEGORIES).map((category) => (
             <button
               key={category.id}
-              onClick={() => setSelectedCategory(category.id)}
+              onClick={() => setSelectedCategory(category.slug || category.id)}
               className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                selectedCategory === category.id
+                selectedCategory === (category.slug || category.id)
                   ? 'bg-blue-600 text-white'
                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
               }`}
@@ -80,6 +114,7 @@ const HomePage = () => {
           ))}
         </div>
       </div>
+
 
       {/* Products */}
       <main className="p-4">

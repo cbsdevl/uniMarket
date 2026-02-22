@@ -16,7 +16,20 @@ CREATE TABLE IF NOT EXISTS profiles (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- 2. PRODUCTS TABLE
+-- 2. CATEGORIES TABLE
+CREATE TABLE IF NOT EXISTS categories (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  name TEXT NOT NULL UNIQUE,
+  slug TEXT NOT NULL UNIQUE,
+  description TEXT,
+  icon TEXT,
+  display_order INTEGER DEFAULT 0,
+  is_active BOOLEAN DEFAULT true,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 3. PRODUCTS TABLE
 CREATE TABLE IF NOT EXISTS products (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   name TEXT NOT NULL,
@@ -25,6 +38,7 @@ CREATE TABLE IF NOT EXISTS products (
   price DECIMAL(10, 2) NOT NULL,
   deposit_amount DECIMAL(10, 2),
   supplier_price DECIMAL(10, 2),
+  category_id UUID REFERENCES categories(id) ON DELETE SET NULL,
   category TEXT NOT NULL,
   is_active BOOLEAN DEFAULT true,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
@@ -91,6 +105,21 @@ CREATE TABLE IF NOT EXISTS payments (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- 7. FEEDBACK TABLE
+CREATE TABLE IF NOT EXISTS feedback (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID REFERENCES profiles(id) ON DELETE SET NULL,
+  product_id UUID REFERENCES products(id) ON DELETE SET NULL,
+  rating INTEGER CHECK (rating >= 1 AND rating <= 5),
+  comment TEXT NOT NULL,
+  feedback_type TEXT DEFAULT 'general' CHECK (feedback_type IN ('general', 'product', 'service', 'bug', 'feature')),
+  status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'reviewed', 'resolved')),
+  admin_response TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+
 -- Create indexes for better performance
 CREATE INDEX IF NOT EXISTS idx_products_category ON products(category);
 CREATE INDEX IF NOT EXISTS idx_products_active ON products(is_active);
@@ -98,16 +127,23 @@ CREATE INDEX IF NOT EXISTS idx_orders_user_id ON orders(user_id);
 CREATE INDEX IF NOT EXISTS idx_orders_status ON orders(status);
 CREATE INDEX IF NOT EXISTS idx_order_items_order_id ON order_items(order_id);
 CREATE INDEX IF NOT EXISTS idx_order_items_product_id ON order_items(product_id);
+CREATE INDEX IF NOT EXISTS idx_feedback_user_id ON feedback(user_id);
+CREATE INDEX IF NOT EXISTS idx_feedback_product_id ON feedback(product_id);
+CREATE INDEX IF NOT EXISTS idx_feedback_status ON feedback(status);
+
 
 -- Row Level Security (RLS) Policies
 
 -- Enable RLS on all tables
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE categories ENABLE ROW LEVEL SECURITY;
 ALTER TABLE products ENABLE ROW LEVEL SECURITY;
 ALTER TABLE suppliers ENABLE ROW LEVEL SECURITY;
 ALTER TABLE orders ENABLE ROW LEVEL SECURITY;
 ALTER TABLE order_items ENABLE ROW LEVEL SECURITY;
 ALTER TABLE payments ENABLE ROW LEVEL SECURITY;
+ALTER TABLE feedback ENABLE ROW LEVEL SECURITY;
+
 
 -- Profiles: Users can read their own profile, admins can read all
 CREATE POLICY "Users can read own profile" ON profiles
@@ -118,7 +154,17 @@ CREATE POLICY "Users can update own profile" ON profiles
 
 CREATE POLICY "Admins can read all profiles" ON profiles
   FOR SELECT USING (
-    (auth.jwt()->>'role') = 'admin'
+    EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin')
+  );
+
+
+-- Categories: Everyone can read active categories, only admins can modify
+CREATE POLICY "Anyone can read active categories" ON categories
+  FOR SELECT USING (is_active = true);
+
+CREATE POLICY "Admins can manage categories" ON categories
+  FOR ALL USING (
+    EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin')
   );
 
 -- Products: Everyone can read active products, only admins can modify
@@ -175,6 +221,27 @@ CREATE POLICY "Admins can manage payments" ON payments
     EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin')
   );
 
+-- Feedback: Users can create and read their own feedback, anyone can read product reviews, admins can manage all
+CREATE POLICY "Users can create feedback" ON feedback
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can read own feedback" ON feedback
+  FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY "Anyone can read product reviews" ON feedback
+  FOR SELECT USING (
+    feedback_type = 'product' AND 
+    status IN ('reviewed', 'resolved')
+  );
+
+CREATE POLICY "Admins can manage all feedback" ON feedback
+  FOR ALL USING (
+    EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin')
+  );
+
+
+
+
 -- Function to create profile on user signup
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
@@ -197,6 +264,15 @@ CREATE TRIGGER on_auth_user_created
   FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
 
 -- SEED DATA (for testing)
+-- Insert sample categories
+INSERT INTO categories (name, slug, description, icon, display_order) VALUES
+('Flash Disks', 'flash-disks', 'USB flash drives and memory sticks', 'HardDrive', 1),
+('Chargers', 'chargers', 'Phone chargers and power adapters', 'Zap', 2),
+('Notes', 'notes', 'Notebooks, exam pads, and stationery', 'BookOpen', 3),
+('Power Banks', 'power-banks', 'Portable power banks and batteries', 'Battery', 4),
+('Others', 'others', 'Other electronic accessories', 'Package', 5)
+ON CONFLICT DO NOTHING;
+
 -- Insert sample products
 INSERT INTO products (name, description, image_url, price, deposit_amount, supplier_price, category) VALUES
 ('USB Flash Drive 32GB', 'High-speed USB 3.0 flash drive, 32GB storage', 'https://images.unsplash.com/photo-1597872200969-2b65d56bd16b?w=400', 2500, 1000, 1500, 'Flash Disks'),

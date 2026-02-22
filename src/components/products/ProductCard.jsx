@@ -1,17 +1,33 @@
 import { useNavigate } from 'react-router-dom'
-import { Plus, Zap, HardDrive, Battery, BookOpen, Package } from 'lucide-react'
+import { Plus, Zap, HardDrive, Battery, BookOpen, Package, Grid, Smartphone, Laptop, Headphones, Camera, Watch, Gift, ShoppingBag, Home, Car, Bike } from 'lucide-react'
 import Card from '../common/Card'
 import { formatCurrency } from '../../utils/helpers'
 import { DEFAULT_PRODUCT_IMAGE } from '../../utils/constants'
 import { useCart } from '../../context/CartContext'
 
-const categoryIcons = {
-  'flash-disks': HardDrive,
-  'chargers': Zap,
-  'notes': BookOpen,
-  'power-banks': Battery,
-  'others': Package
+const iconMap = {
+  'HardDrive': HardDrive,
+  'Zap': Zap,
+  'BookOpen': BookOpen,
+  'Battery': Battery,
+  'Package': Package,
+  'Grid': Grid,
+  'Smartphone': Smartphone,
+  'Laptop': Laptop,
+  'Headphones': Headphones,
+  'Camera': Camera,
+  'Watch': Watch,
+  'Gift': Gift,
+  'ShoppingBag': ShoppingBag,
+  'Home': Home,
+  'Car': Car,
+  'Bike': Bike
 }
+
+const getCategoryIcon = (iconName) => {
+  return iconMap[iconName] || Package
+}
+
 
 const ProductCard = ({ product }) => {
   const navigate = useNavigate()
@@ -26,7 +42,8 @@ const ProductCard = ({ product }) => {
     navigate(`/product/${product.id}`)
   }
 
-  const CategoryIcon = categoryIcons[product.category] || Package
+  const CategoryIcon = getCategoryIcon(product.category_icon) || Package
+
 
   return (
     <Card hover onClick={handleClick} className="overflow-hidden">

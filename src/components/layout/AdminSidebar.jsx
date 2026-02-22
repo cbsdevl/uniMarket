@@ -9,8 +9,12 @@ import {
   LogOut,
   X,
   ChevronRight,
-  Shield
+  Shield,
+  Tag,
+  MessageSquare
 } from 'lucide-react'
+
+
 import { useAuth } from '../../context/AuthContext'
 
 
@@ -21,11 +25,16 @@ const AdminSidebar = ({ isOpen, onClose }) => {
   const navItems = [
     { path: '/admin', icon: LayoutDashboard, label: 'Dashboard' },
     { path: '/admin/products', icon: Package, label: 'Products' },
+    { path: '/admin/categories', icon: Tag, label: 'Categories' },
     { path: '/admin/orders', icon: ShoppingCart, label: 'Orders' },
+    { path: '/admin/feedback', icon: MessageSquare, label: 'Feedback' },
     { path: '/admin/suppliers', icon: Users, label: 'Suppliers' },
     { path: '/admin/delivery', icon: Truck, label: 'Delivery' },
     { path: '/admin/reports', icon: BarChart3, label: 'Reports' }
   ]
+
+
+
 
   return (
     <>

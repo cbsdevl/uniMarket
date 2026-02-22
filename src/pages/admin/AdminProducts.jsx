@@ -7,10 +7,11 @@ import Input from '../../components/common/Input'
 import Modal from '../../components/common/Modal'
 import { supabase } from '../../lib/supabase'
 import { formatCurrency } from '../../utils/helpers'
-import { DEFAULT_PRODUCT_IMAGE, CATEGORIES } from '../../utils/constants'
+import { DEFAULT_PRODUCT_IMAGE, DEFAULT_CATEGORIES } from '../../utils/constants'
 
 const AdminProducts = () => {
   const [products, setProducts] = useState([])
+  const [categories, setCategories] = useState([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [showModal, setShowModal] = useState(false)
@@ -21,13 +22,15 @@ const AdminProducts = () => {
     price: '',
     deposit_amount: '',
     supplier_price: '',
-    category: 'Flash Disks',
+    category: '',
     image_url: ''
   })
 
   useEffect(() => {
     fetchProducts()
+    fetchCategories()
   }, [])
+
 
   const fetchProducts = async () => {
     setLoading(true)
@@ -45,6 +48,32 @@ const AdminProducts = () => {
       setLoading(false)
     }
   }
+
+  const fetchCategories = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('categories')
+        .select('*')
+        .eq('is_active', true)
+        .order('display_order', { ascending: true })
+
+      if (error) throw error
+      setCategories(data || [])
+      
+      // Set default category if not editing
+      if (data && data.length > 0 && !editingProduct) {
+        setFormData(prev => ({ ...prev, category: data[0].name }))
+      }
+    } catch (err) {
+      console.error('Error fetching categories:', err)
+      // Fallback to default categories
+      setCategories(DEFAULT_CATEGORIES)
+      if (!editingProduct) {
+        setFormData(prev => ({ ...prev, category: DEFAULT_CATEGORIES[0]?.name || '' }))
+      }
+    }
+  }
+
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -117,16 +146,18 @@ const AdminProducts = () => {
   }
 
   const resetForm = () => {
+    const defaultCategory = categories[0]?.name || DEFAULT_CATEGORIES[0]?.name || ''
     setFormData({
       name: '',
       description: '',
       price: '',
       deposit_amount: '',
       supplier_price: '',
-      category: 'Flash Disks',
+      category: defaultCategory,
       image_url: ''
     })
   }
+
 
   const filteredProducts = products.filter(p =>
     p.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -287,11 +318,18 @@ const AdminProducts = () => {
               onChange={(e) => setFormData({ ...formData, category: e.target.value })}
               className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              {CATEGORIES.map((cat) => (
-                <option key={cat.id} value={cat.id}>{cat.name}</option>
-              ))}
+              {categories.length > 0 ? (
+                categories.map((cat) => (
+                  <option key={cat.id} value={cat.name}>{cat.name}</option>
+                ))
+              ) : (
+                DEFAULT_CATEGORIES.map((cat) => (
+                  <option key={cat.id} value={cat.name}>{cat.name}</option>
+                ))
+              )}
             </select>
           </div>
+
 
           <Input
             label="Image URL"

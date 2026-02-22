@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { Plus, Minus, ShoppingCart, ArrowLeft } from 'lucide-react'
+import { Plus, Minus, ShoppingCart, ArrowLeft, MessageSquare } from 'lucide-react'
 import Header from '../../components/layout/Header'
 import BottomNav from '../../components/layout/BottomNav'
 import Button from '../../components/common/Button'
 import Card from '../../components/common/Card'
+import ProductReviews from '../../components/products/ProductReviews'
 import { supabase } from '../../lib/supabase'
 import { formatCurrency } from '../../utils/helpers'
 import { DEFAULT_PRODUCT_IMAGE, PAYMENT_METHOD_CONFIG } from '../../utils/constants'
@@ -19,6 +20,7 @@ const ProductDetailPage = () => {
   const [loading, setLoading] = useState(true)
   const [quantity, setQuantity] = useState(1)
   const [selectedPayment, setSelectedPayment] = useState('DEPOSIT')
+  const [activeTab, setActiveTab] = useState('details')
 
   useEffect(() => {
     fetchProduct()
@@ -91,6 +93,12 @@ const ProductDetailPage = () => {
 
         {/* Product Info */}
         <Card className="p-4 mb-4">
+          {/* Category Badge */}
+          {product.category && (
+            <span className="inline-block px-3 py-1 bg-blue-100 text-blue-700 text-xs font-medium rounded-full mb-3">
+              {product.category}
+            </span>
+          )}
           <h1 className="text-xl font-bold text-gray-900 mb-2">{product.name}</h1>
           <p className="text-gray-600 text-sm mb-4">{product.description}</p>
           
@@ -113,72 +121,104 @@ const ProductDetailPage = () => {
           )}
         </Card>
 
-        {/* Payment Methods */}
-        <Card className="p-4 mb-4">
-          <h3 className="font-semibold text-gray-900 mb-3">Payment Options</h3>
-          <div className="space-y-2">
-            {Object.entries(PAYMENT_METHOD_CONFIG).map(([key, config]) => (
-              <label
-                key={key}
-                className={`flex items-center justify-between p-3 rounded-lg border-2 cursor-pointer transition-colors ${
-                  selectedPayment === key
-                    ? 'border-blue-600 bg-blue-50'
-                    : 'border-gray-200 hover:border-gray-300'
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <input
-                    type="radio"
-                    name="payment"
-                    value={key}
-                    checked={selectedPayment === key}
-                    onChange={(e) => setSelectedPayment(e.target.value)}
-                    className="w-4 h-4 text-blue-600"
-                  />
-                  <div>
-                    <p className="font-medium text-gray-900 text-sm">{config.label}</p>
-                    <p className="text-xs text-gray-500">{config.description}</p>
-                  </div>
-                </div>
-                {key === 'FULL' && (
-                  <span className="text-xs font-medium text-green-600">5% OFF</span>
-                )}
-              </label>
-            ))}
-          </div>
-        </Card>
-
-        {/* Quantity */}
-        <Card className="p-4 mb-4">
-          <h3 className="font-semibold text-gray-900 mb-3">Quantity</h3>
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => setQuantity(Math.max(1, quantity - 1))}
-              className="w-10 h-10 flex items-center justify-center bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors"
-            >
-              <Minus className="w-5 h-5 text-gray-600" />
-            </button>
-            <span className="text-xl font-bold text-gray-900 w-12 text-center">{quantity}</span>
-            <button
-              onClick={() => setQuantity(quantity + 1)}
-              className="w-10 h-10 flex items-center justify-center bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors"
-            >
-              <Plus className="w-5 h-5 text-gray-600" />
-            </button>
-          </div>
-        </Card>
-
-        {/* Add to Cart Button */}
-        <div className="sticky bottom-20 bg-white p-4 border-t border-gray-100">
-          <Button
-            onClick={handleAddToCart}
-            className="w-full"
-            size="lg"
+        {/* Tabs */}
+        <div className="flex gap-2 mb-4">
+          <button
+            onClick={() => setActiveTab('details')}
+            className={`flex-1 py-3 px-4 rounded-xl font-medium text-sm transition-colors ${
+              activeTab === 'details'
+                ? 'bg-blue-600 text-white'
+                : 'bg-white text-gray-600 hover:bg-gray-50'
+            }`}
           >
-            <ShoppingCart className="w-5 h-5 mr-2" />
-            Add to Cart - {formatCurrency(product.price * quantity)}
-          </Button>
+            Details
+          </button>
+          <button
+            onClick={() => setActiveTab('reviews')}
+            className={`flex-1 py-3 px-4 rounded-xl font-medium text-sm transition-colors flex items-center justify-center gap-2 ${
+              activeTab === 'reviews'
+                ? 'bg-blue-600 text-white'
+                : 'bg-white text-gray-600 hover:bg-gray-50'
+            }`}
+          >
+            <MessageSquare className="w-4 h-4" />
+            Reviews
+          </button>
         </div>
+
+        {activeTab === 'details' ? (
+          <>
+            {/* Payment Methods */}
+            <Card className="p-4 mb-4">
+              <h3 className="font-semibold text-gray-900 mb-3">Payment Options</h3>
+              <div className="space-y-2">
+                {Object.entries(PAYMENT_METHOD_CONFIG).map(([key, config]) => (
+                  <label
+                    key={key}
+                    className={`flex items-center justify-between p-3 rounded-lg border-2 cursor-pointer transition-colors ${
+                      selectedPayment === key
+                        ? 'border-blue-600 bg-blue-50'
+                        : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="radio"
+                        name="payment"
+                        value={key}
+                        checked={selectedPayment === key}
+                        onChange={(e) => setSelectedPayment(e.target.value)}
+                        className="w-4 h-4 text-blue-600"
+                      />
+                      <div>
+                        <p className="font-medium text-gray-900 text-sm">{config.label}</p>
+                        <p className="text-xs text-gray-500">{config.description}</p>
+                      </div>
+                    </div>
+                    {key === 'FULL' && (
+                      <span className="text-xs font-medium text-green-600">5% OFF</span>
+                    )}
+                  </label>
+                ))}
+              </div>
+            </Card>
+
+            {/* Quantity */}
+            <Card className="p-4 mb-4">
+              <h3 className="font-semibold text-gray-900 mb-3">Quantity</h3>
+              <div className="flex items-center gap-4">
+                <button
+                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                  className="w-10 h-10 flex items-center justify-center bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors"
+                >
+                  <Minus className="w-5 h-5 text-gray-600" />
+                </button>
+                <span className="text-xl font-bold text-gray-900 w-12 text-center">{quantity}</span>
+                <button
+                  onClick={() => setQuantity(quantity + 1)}
+                  className="w-10 h-10 flex items-center justify-center bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors"
+                >
+                  <Plus className="w-5 h-5 text-gray-600" />
+                </button>
+              </div>
+            </Card>
+
+            {/* Add to Cart Button */}
+            <div className="sticky bottom-20 bg-white p-4 border-t border-gray-100">
+              <Button
+                onClick={handleAddToCart}
+                className="w-full"
+                size="lg"
+              >
+                <ShoppingCart className="w-5 h-5 mr-2" />
+                Add to Cart - {formatCurrency(product.price * quantity)}
+              </Button>
+            </div>
+          </>
+        ) : (
+          /* Reviews Tab */
+          <ProductReviews productId={id} />
+        )}
       </main>
 
       <BottomNav />

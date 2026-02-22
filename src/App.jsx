@@ -12,14 +12,17 @@ import CheckoutPage from './pages/customer/CheckoutPage'
 import OrdersPage from './pages/customer/OrdersPage'
 import OrderDetailPage from './pages/customer/OrderDetailPage'
 import ProfilePage from './pages/customer/ProfilePage'
+import FeedbackPage from './pages/customer/FeedbackPage'
 
 // Admin Pages
 import AdminDashboard from './pages/admin/AdminDashboard'
 import AdminProducts from './pages/admin/AdminProducts'
+import AdminCategories from './pages/admin/AdminCategories'
 import AdminOrders from './pages/admin/AdminOrders'
 import AdminSuppliers from './pages/admin/AdminSuppliers'
 import AdminDelivery from './pages/admin/AdminDelivery'
 import AdminReports from './pages/admin/AdminReports'
+import AdminFeedback from './pages/admin/AdminFeedback'
 
 // Auth
 import LoginPage from './pages/auth/LoginPage'
@@ -113,6 +116,12 @@ function AppRoutes() {
           <ProfilePage />
         </CartProvider>
       } />
+      
+      <Route path="/feedback" element={
+        <CartProvider>
+          <FeedbackPage />
+        </CartProvider>
+      } />
 
       {/* Admin Routes */}
       <Route path="/admin" element={
@@ -127,6 +136,14 @@ function AppRoutes() {
         <ProtectedRoute adminOnly>
           <AdminLayout>
             <AdminProducts />
+          </AdminLayout>
+        </ProtectedRoute>
+      } />
+      
+      <Route path="/admin/categories" element={
+        <ProtectedRoute adminOnly>
+          <AdminLayout>
+            <AdminCategories />
           </AdminLayout>
         </ProtectedRoute>
       } />
@@ -159,6 +176,14 @@ function AppRoutes() {
         <ProtectedRoute adminOnly>
           <AdminLayout>
             <AdminReports />
+          </AdminLayout>
+        </ProtectedRoute>
+      } />
+      
+      <Route path="/admin/feedback" element={
+        <ProtectedRoute adminOnly>
+          <AdminLayout>
+            <AdminFeedback />
           </AdminLayout>
         </ProtectedRoute>
       } />

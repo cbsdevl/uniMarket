@@ -1,4 +1,5 @@
-import { Home, ShoppingBag, ShoppingCart, User } from 'lucide-react'
+import { Home, MessageSquare, ShoppingCart, User } from 'lucide-react'
+
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useCart } from '../../context/CartContext'
 
@@ -10,10 +11,11 @@ const BottomNav = () => {
 
   const navItems = [
     { path: '/', icon: Home, label: 'Home' },
-    { path: '/products', icon: ShoppingBag, label: 'Products' },
+    { path: '/feedback', icon: MessageSquare, label: 'Feedback' },
     { path: '/cart', icon: ShoppingCart, label: 'Cart', badge: cartCount },
     { path: '/profile', icon: User, label: 'Profile' }
   ]
+
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 safe-area-bottom z-50">
