@@ -61,6 +61,7 @@ const ProductDetailPage = () => {
   }
 
   if (!product) {
+    
     return (
       <div className="min-h-screen bg-gray-50">
         <Header title="Product Not Found" showBack />

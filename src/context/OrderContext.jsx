@@ -52,7 +52,11 @@ export const OrderProvider = ({ children }) => {
     setLoading(true)
     setError(null)
     try {
-      const { items, paymentMethod, deliveryAddress, phone, userId, depositAmount, totalAmount } = orderData
+      const { items, paymentMethod, deliveryAddress, phone, userId, depositAmount, totalAmount, paymentProvider, paymentName, paymentPhone } = orderData
+
+      // Calculate payment amount
+      const paymentAmount = paymentMethod === 'DEPOSIT' ? depositAmount : totalAmount
+      const isMobileMoney = paymentProvider && paymentProvider !== 'CASH'
 
       // Create order
       const { data: order, error: orderError } = await supabase
@@ -61,6 +65,10 @@ export const OrderProvider = ({ children }) => {
           user_id: userId,
           status: ORDER_STATUS.PENDING_PAYMENT,
           payment_method: paymentMethod,
+          payment_provider: paymentProvider || null,
+          payment_name: paymentName || null,
+          payment_phone: paymentPhone || null,
+          payment_status: isMobileMoney ? 'PENDING' : null,
           total_amount: totalAmount,
           deposit_amount: depositAmount || 0,
           balance_due: totalAmount - (depositAmount || 0),
@@ -88,6 +96,22 @@ export const OrderProvider = ({ children }) => {
 
       if (itemsError) throw itemsError
 
+      // Create payment record if mobile money
+      if (isMobileMoney && paymentAmount > 0) {
+        const { error: paymentError } = await supabase
+          .from('payments')
+          .insert({
+            order_id: order.id,
+            amount: paymentAmount,
+            method: paymentProvider,
+            status: 'PENDING'
+          })
+
+        if (paymentError) {
+          console.error('Error creating payment record:', paymentError)
+        }
+      }
+
       // Fetch the complete order with items
       const { data: completeOrder } = await supabase
         .from('orders')
@@ -113,20 +137,46 @@ export const OrderProvider = ({ children }) => {
     }
   }
 
-  const updateOrderStatus = async (orderId, newStatus) => {
+  const updateOrderStatus = async (orderId, newStatus, paymentStatus = null) => {
     setLoading(true)
     setError(null)
     try {
+      const order = orders.find(o => o.id === orderId)
+      let profit = 0
+      let updateData = { status: newStatus }
+
+      // Add payment status if provided
+      if (paymentStatus) {
+        updateData.payment_status = paymentStatus
+
+        // Update payment record in payments table
+        await supabase
+          .from('payments')
+          .update({ 
+            status: paymentStatus === 'VERIFIED' ? 'CONFIRMED' : 'FAILED'
+          })
+          .eq('order_id', orderId)
+      }
+
+      if (newStatus === 'DELIVERED' && order?.order_items) {
+        // Calculate profit
+        profit = order.order_items.reduce((sum, item) => {
+          const cost = item.product?.supplier_price || 0
+          return sum + ((item.unit_price - cost) * item.quantity)
+        }, 0)
+        updateData.profit = profit
+      }
+
       const { error } = await supabase
         .from('orders')
-        .update({ status: newStatus })
+        .update(updateData)
         .eq('id', orderId)
 
       if (error) throw error
 
       setOrders(prev =>
         prev.map(order =>
-          order.id === orderId ? { ...order, status: newStatus } : order
+          order.id === orderId ? { ...order, ...updateData } : order
         )
       )
 

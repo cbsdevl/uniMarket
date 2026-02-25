@@ -9,7 +9,7 @@ import { useCart } from '../../context/CartContext'
 import { useAuth } from '../../context/AuthContext'
 import { useOrders } from '../../context/OrderContext'
 import { formatCurrency } from '../../utils/helpers'
-import { CAMPUS_LOCATIONS, PAYMENT_METHOD_CONFIG } from '../../utils/constants'
+import { CAMPUS_LOCATIONS, PAYMENT_METHOD_CONFIG, PAYMENT_PROVIDER_CONFIG } from '../../utils/constants'
 
 const CheckoutPage = () => {
   const navigate = useNavigate()
@@ -19,6 +19,9 @@ const CheckoutPage = () => {
   
   const [loading, setLoading] = useState(false)
   const [paymentMethod, setPaymentMethod] = useState('DEPOSIT')
+  const [paymentProvider, setPaymentProvider] = useState('')
+  const [paymentName, setPaymentName] = useState(profile?.name || '')
+  const [paymentPhone, setPaymentPhone] = useState(profile?.phone || '')
   const [deliveryAddress, setDeliveryAddress] = useState(profile?.campus || '')
   const [phone, setPhone] = useState(profile?.phone || '')
   const [errors, setErrors] = useState({})
@@ -29,11 +32,18 @@ const CheckoutPage = () => {
   const depositAmount = paymentMethod === 'DEPOSIT' ? items.reduce((sum, item) => sum + (item.deposit_amount || item.price * 0.3) * item.quantity, 0) : 0
   const balanceDue = total - depositAmount
 
+  const showMobileMoneyFields = paymentProvider === 'MTN' || paymentProvider === 'AIRTEL'
+
   const validateForm = () => {
     const newErrors = {}
     if (!deliveryAddress) newErrors.deliveryAddress = 'Delivery address is required'
     if (!phone) newErrors.phone = 'Phone number is required'
     else if (phone.length < 10) newErrors.phone = 'Please enter a valid phone number'
+    
+    if (paymentProvider && paymentProvider !== 'CASH') {
+      if (!paymentName) newErrors.paymentName = 'Your name is required'
+      if (!paymentPhone) newErrors.paymentPhone = 'Mobile money phone is required'
+    }
     
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
@@ -57,7 +67,10 @@ const CheckoutPage = () => {
       phone,
       userId: user.id,
       depositAmount,
-      totalAmount: total
+      totalAmount: total,
+      paymentProvider: paymentProvider || 'CASH',
+      paymentName: paymentName || null,
+      paymentPhone: paymentPhone || null
     }
 
     const result = await createOrder(orderData)
@@ -163,6 +176,63 @@ const CheckoutPage = () => {
               ))}
             </div>
           </Card>
+
+          {/* Mobile Money Provider */}
+          <Card className="p-4 mb-4">
+            <h3 className="font-semibold text-gray-900 mb-4">Select Payment Provider</h3>
+            
+            <div className="grid grid-cols-3 gap-2">
+              {Object.entries(PAYMENT_PROVIDER_CONFIG).map(([key, config]) => (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => setPaymentProvider(key)}
+                  className={`p-3 rounded-lg border-2 text-center transition-colors ${
+                    paymentProvider === key
+                      ? 'border-blue-600 bg-blue-50'
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                  style={{ 
+                    backgroundColor: paymentProvider === key ? config.color : 'white',
+                    color: paymentProvider === key ? config.textColor : '#374151'
+                  }}
+                >
+                  <span className="block font-medium text-sm">{config.label}</span>
+                </button>
+              ))}
+            </div>
+          </Card>
+
+          {/* Mobile Money Details */}
+          {showMobileMoneyFields && (
+            <Card className="p-4 mb-4 border-2 border-blue-500">
+              <h3 className="font-semibold text-gray-900 mb-4">Payment Details</h3>
+              
+              <div className="space-y-4">
+                <p className="text-sm text-gray-600 bg-blue-50 p-3 rounded-lg">
+                  Pay to: <span className="font-bold">{paymentProvider === 'MTN' ? '0788 000 000' : '0780 000 000'}</span>
+                </p>
+
+                <Input
+                  label="Your Name (as on mobile money)"
+                  type="text"
+                  value={paymentName}
+                  onChange={(e) => setPaymentName(e.target.value)}
+                  placeholder="Enter your name"
+                  error={errors.paymentName}
+                />
+
+                <Input
+                  label="Mobile Money Phone Number"
+                  type="tel"
+                  value={paymentPhone}
+                  onChange={(e) => setPaymentPhone(e.target.value)}
+                  placeholder="07xxxxxxxx"
+                  error={errors.paymentPhone}
+                />
+              </div>
+            </Card>
+          )}
 
           {/* Order Summary */}
           <Card className="p-4 mb-4">

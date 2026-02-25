@@ -73,6 +73,11 @@ CREATE TABLE IF NOT EXISTS orders (
     )
   ),
   payment_method TEXT CHECK (payment_method IN ('DEPOSIT', 'COD', 'FULL')),
+  payment_provider TEXT CHECK (payment_provider IN ('MTN', 'AIRTEL', 'CASH')),
+  payment_name TEXT,
+  payment_phone TEXT,
+  payment_proof TEXT,
+  payment_status TEXT DEFAULT 'PENDING' CHECK (payment_status IN ('PENDING', 'VERIFIED', 'REJECTED')),
   total_amount DECIMAL(10, 2) NOT NULL,
   deposit_amount DECIMAL(10, 2) DEFAULT 0,
   balance_due DECIMAL(10, 2) DEFAULT 0,
@@ -90,6 +95,7 @@ CREATE TABLE IF NOT EXISTS order_items (
   product_id UUID REFERENCES products(id) ON DELETE SET NULL,
   quantity INTEGER NOT NULL DEFAULT 1,
   unit_price DECIMAL(10, 2) NOT NULL,
+  supplier_price DECIMAL(10, 2),
   subtotal DECIMAL(10, 2) NOT NULL,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );

@@ -19,7 +19,9 @@ export const ORDER_STATUS_CONFIG = {
   SOURCED: { label: 'Sourced', color: 'bg-purple-100 text-purple-800', icon: 'Truck' },
   OUT_FOR_DELIVERY: { label: 'Out for Delivery', color: 'bg-indigo-100 text-indigo-800', icon: 'MapPin' },
   DELIVERED: { label: 'Delivered', color: 'bg-green-100 text-green-800', icon: 'PackageCheck' },
-  CANCELLED: { label: 'Cancelled', color: 'bg-red-100 text-red-800', icon: 'XCircle' }
+  CANCELLED: { label: 'Cancelled', color: 'bg-red-100 text-red-800', icon: 'XCircle' },
+  WAIT_FOR_REFUND: { label: 'Wait for Refund', color: 'bg-orange-100 text-orange-800', icon: 'Clock' },
+  REFUNDED: { label: 'Refunded', color: 'bg-gray-100 text-gray-800', icon: 'CheckCircle' }
 }
 
 // Payment method labels
@@ -27,6 +29,13 @@ export const PAYMENT_METHOD_CONFIG = {
   DEPOSIT: { label: 'Deposit First', description: 'Pay deposit now, balance on delivery', discount: 0 },
   COD: { label: 'Cash on Delivery', description: 'Pay on delivery (campus only)', discount: 0 },
   FULL: { label: 'Full Payment', description: 'Pay full amount now & get discount', discount: 5 }
+}
+
+// Payment provider labels
+export const PAYMENT_PROVIDER_CONFIG = {
+  MTN: { label: 'MTN Mobile Money', description: 'Pay via MTN MoMo' },
+  AIRTEL: { label: 'Airtel Money', description: 'Pay via Airtel Money' },
+  CASH: { label: 'Cash on Delivery', description: 'Pay when receiving order' }
 }
 
 // Campus locations

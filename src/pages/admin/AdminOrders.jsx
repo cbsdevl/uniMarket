@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Filter, Search, X } from 'lucide-react'
+import { Search, X, DollarSign } from 'lucide-react'
 import AdminSidebar from '../../components/layout/AdminSidebar'
 import Card from '../../components/common/Card'
 import OrderCard from '../../components/orders/OrderCard'
@@ -41,26 +41,33 @@ const AdminOrders = () => {
     }
   }
 
-  const handleStatusUpdate = async (orderId, newStatus) => {
+  const handleStatusUpdate = async (orderId, newStatus, paymentStatus = null) => {
     try {
-      // Get the order to calculate profit
       const order = orders.find(o => o.id === orderId)
       let profit = 0
+      let updateData = { status: newStatus }
+
+      if (paymentStatus) {
+        updateData.payment_status = paymentStatus
+
+        const paymentStatusDb = paymentStatus === 'VERIFIED' ? 'CONFIRMED' : 'FAILED'
+        await supabase
+          .from('payments')
+          .update({ status: paymentStatusDb })
+          .eq('order_id', orderId)
+      }
 
       if (newStatus === 'DELIVERED' && order?.order_items) {
-        // Calculate profit
         profit = order.order_items.reduce((sum, item) => {
           const cost = item.product?.supplier_price || 0
           return sum + ((item.unit_price - cost) * item.quantity)
         }, 0)
+        updateData.profit = profit
       }
 
       const { error } = await supabase
         .from('orders')
-        .update({ 
-          status: newStatus,
-          ...(profit > 0 && { profit })
-        })
+        .update(updateData)
         .eq('id', orderId)
 
       if (error) throw error
@@ -70,11 +77,58 @@ const AdminOrders = () => {
     }
   }
 
+  const handlePaymentVerification = async (orderId, verified) => {
+    const newPaymentStatus = verified ? 'VERIFIED' : 'REJECTED'
+    await handleStatusUpdate(orderId, 'PENDING_CONFIRMATION', newPaymentStatus)
+  }
+
+  const handleCancelOrder = async (orderId) => {
+    try {
+      await supabase
+        .from('orders')
+        .update({ 
+          status: 'WAIT_FOR_REFUND',
+          payment_status: 'REJECTED'
+        })
+        .eq('id', orderId)
+
+      await supabase
+        .from('payments')
+        .update({ status: 'FAILED' })
+        .eq('order_id', orderId)
+
+      fetchOrders()
+    } catch (err) {
+      console.error('Error cancelling order:', err)
+    }
+  }
+
+  const handleProcessRefund = async (orderId) => {
+    try {
+      await supabase
+        .from('orders')
+        .update({ 
+          status: 'REFUNDED'
+        })
+        .eq('id', orderId)
+
+      await supabase
+        .from('payments')
+        .update({ status: 'REFUNDED' })
+        .eq('order_id', orderId)
+
+      fetchOrders()
+    } catch (err) {
+      console.error('Error processing refund:', err)
+    }
+  }
+
   const filteredOrders = orders.filter(order => {
     const matchesSearch = !searchQuery || 
       order.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
       order.user?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      order.phone?.includes(searchQuery)
+      order.phone?.includes(searchQuery) ||
+      order.payment_name?.toLowerCase().includes(searchQuery.toLowerCase())
     
     const matchesStatus = statusFilter === 'all' || order.status === statusFilter
     
@@ -88,23 +142,80 @@ const AdminOrders = () => {
     CONFIRMED: orders.filter(o => o.status === 'CONFIRMED').length,
     SOURCED: orders.filter(o => o.status === 'SOURCED').length,
     OUT_FOR_DELIVERY: orders.filter(o => o.status === 'OUT_FOR_DELIVERY').length,
-    DELIVERED: orders.filter(o => o.status === 'DELIVERED').length
+    DELIVERED: orders.filter(o => o.status === 'DELIVERED').length,
+    WAIT_FOR_REFUND: orders.filter(o => o.status === 'WAIT_FOR_REFUND').length,
+    REFUNDED: orders.filter(o => o.status === 'REFUNDED').length
   }
+
+  const pendingPayments = orders.filter(o => 
+    o.status === 'PENDING_PAYMENT' && 
+    o.payment_provider && 
+    o.payment_provider !== 'CASH' &&
+    (!o.payment_status || o.payment_status === 'PENDING')
+  )
+
+  const waitForRefundOrders = orders.filter(o => o.status === 'WAIT_FOR_REFUND')
 
   return (
     <div className="flex min-h-screen bg-gray-50">
       <AdminSidebar />
       
       <main className="flex-1 p-6 lg:p-8">
-        {/* Header */}
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-gray-900">Orders</h1>
           <p className="text-gray-500 mt-1">Manage and track all orders</p>
         </div>
 
-        {/* Status Filters */}
+        {pendingPayments.length > 0 && (
+          <Card className="p-4 mb-6 bg-amber-50 border-amber-200">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-lg">💳</span>
+              <h3 className="font-semibold text-amber-800">
+                {pendingPayments.length} Pending Payment{pendingPayments.length > 1 ? 's' : ''} Need Verification
+              </h3>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {pendingPayments.slice(0, 5).map(order => (
+                <div key={order.id} className="bg-white rounded-lg p-2 text-sm">
+                  <span className="font-medium">{order.payment_name}</span>
+                  <span className="text-gray-500"> - {order.payment_phone}</span>
+                </div>
+              ))}
+              {pendingPayments.length > 5 && (
+                <span className="text-sm text-amber-600 self-center">
+                  +{pendingPayments.length - 5} more
+                </span>
+              )}
+            </div>
+          </Card>
+        )}
+
+        {waitForRefundOrders.length > 0 && (
+          <Card className="p-4 mb-6 bg-orange-50 border-orange-200">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-lg">⏳</span>
+              <h3 className="font-semibold text-orange-800">
+                {waitForRefundOrders.length} Order{waitForRefundOrders.length > 1 ? 's' : ''} Waiting for Refund
+              </h3>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {waitForRefundOrders.slice(0, 5).map(order => (
+                <div key={order.id} className="bg-white rounded-lg p-2 text-sm">
+                  <span className="font-medium">{order.user?.name || 'Customer'}</span>
+                  <span className="text-gray-500"> - {order.payment_name}</span>
+                </div>
+              ))}
+              {waitForRefundOrders.length > 5 && (
+                <span className="text-sm text-orange-600 self-center">
+                  +{waitForRefundOrders.length - 5} more
+                </span>
+              )}
+            </div>
+          </Card>
+        )}
+
         <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
-          {['all', 'PENDING_PAYMENT', 'PENDING_CONFIRMATION', 'CONFIRMED', 'SOURCED', 'OUT_FOR_DELIVERY', 'DELIVERED'].map((status) => (
+          {['all', 'PENDING_PAYMENT', 'PENDING_CONFIRMATION', 'CONFIRMED', 'SOURCED', 'OUT_FOR_DELIVERY', 'DELIVERED', 'WAIT_FOR_REFUND', 'REFUNDED'].map((status) => (
             <button
               key={status}
               onClick={() => setStatusFilter(status)}
@@ -120,13 +231,12 @@ const AdminOrders = () => {
           ))}
         </div>
 
-        {/* Search */}
         <Card className="p-4 mb-6">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
             <input
               type="text"
-              placeholder="Search by order ID, customer name, or phone..."
+              placeholder="Search by order ID, customer name, phone, or payment name..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -142,7 +252,6 @@ const AdminOrders = () => {
           </div>
         </Card>
 
-        {/* Orders List */}
         {loading ? (
           <div className="flex items-center justify-center py-12">
             <div className="animate-spin w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full" />
@@ -159,6 +268,9 @@ const AdminOrders = () => {
                 order={order}
                 showActions={true}
                 onStatusUpdate={handleStatusUpdate}
+                onPaymentVerify={handlePaymentVerification}
+                onCancelOrder={handleCancelOrder}
+                onProcessRefund={handleProcessRefund}
               />
             ))}
           </div>
