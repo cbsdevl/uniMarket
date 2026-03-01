@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Send, Star, MessageSquare, CheckCircle, AlertCircle } from 'lucide-react'
+import { Send, Star, MessageSquare, CheckCircle, AlertCircle, Clock, RefreshCw } from 'lucide-react'
 import Header from '../../components/layout/Header'
 import BottomNav from '../../components/layout/BottomNav'
 import Button from '../../components/common/Button'
 import Card from '../../components/common/Card'
+import Badge from '../../components/common/Badge'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
+import { formatDistanceToNow } from '../../utils/helpers'
 
 const FeedbackPage = () => {
   const navigate = useNavigate()
@@ -19,6 +21,7 @@ const FeedbackPage = () => {
     product_id: ''
   })
   const [products, setProducts] = useState([])
+  const [myFeedback, setMyFeedback] = useState([])
   const [loading, setLoading] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [success, setSuccess] = useState(false)
@@ -26,7 +29,10 @@ const FeedbackPage = () => {
 
   useEffect(() => {
     fetchProducts()
-  }, [])
+    if (user) {
+      fetchMyFeedback()
+    }
+  }, [user])
 
   const fetchProducts = async () => {
     try {
@@ -40,6 +46,22 @@ const FeedbackPage = () => {
       setProducts(data || [])
     } catch (err) {
       console.error('Error fetching products:', err)
+    }
+  }
+
+  const fetchMyFeedback = async () => {
+    if (!user) return
+    try {
+      const { data, error } = await supabase
+        .from('feedback')
+        .select('*, products:product_id(name)')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+
+      if (error) throw error
+      setMyFeedback(data || [])
+    } catch (err) {
+      console.error('Error fetching my feedback:', err)
     }
   }
 
@@ -88,6 +110,9 @@ const FeedbackPage = () => {
         product_id: ''
       })
 
+      // Refresh my feedback list
+      fetchMyFeedback()
+
       // Reset success message after 5 seconds
       setTimeout(() => setSuccess(false), 5000)
     } catch (err) {
@@ -105,6 +130,65 @@ const FeedbackPage = () => {
     { value: 'bug', label: 'Report a Bug', icon: AlertCircle },
     { value: 'feature', label: 'Feature Request', icon: MessageSquare }
   ]
+
+  const getStatusBadge = (status) => {
+    const configs = {
+      pending: { color: 'bg-yellow-100 text-yellow-800', icon: Clock, label: 'Pending' },
+      reviewed: { color: 'bg-blue-100 text-blue-800', icon: CheckCircle, label: 'Reviewed' },
+      resolved: { color: 'bg-green-100 text-green-800', icon: CheckCircle, label: 'Resolved' }
+    }
+    const config = configs[status] || configs.pending
+    return <Badge className={config.color} icon={config.icon}>{config.label}</Badge>
+  }
+
+  const renderStars = (rating) => {
+    return (
+      <div className="flex gap-1">
+        {[1, 2, 3, 4, 5].map((star) => (
+          <Star
+            key={star}
+            className={`w-4 h-4 ${star <= rating ? 'text-yellow-400 fill-current' : 'text-gray-300'}`}
+          />
+        ))}
+      </div>
+    )
+  }
+
+  const renderFeedbackItem = (item) => (
+    <Card key={item.id} className="p-4 mb-3">
+      <div className="flex items-start gap-3">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-2 flex-wrap">
+            <span className="text-xs font-medium text-slate-500 uppercase">
+              {item.feedback_type}
+            </span>
+            {getStatusBadge(item.status)}
+            {item.rating > 0 && renderStars(item.rating)}
+          </div>
+          
+          {item.products?.name && (
+            <p className="text-sm text-slate-500 mb-2">
+              Product: <span className="font-medium text-slate-700">{item.products.name}</span>
+            </p>
+          )}
+          
+          <p className="text-slate-700 mb-2">{item.comment}</p>
+          
+          <p className="text-xs text-slate-400 mb-3">
+            {formatDistanceToNow(item.created_at)}
+          </p>
+
+          {/* Admin Response */}
+          {item.admin_response && (
+            <div className="bg-blue-50 rounded-lg p-3 border border-blue-100 mt-3">
+              <p className="text-xs font-medium text-blue-900 mb-1">Admin Response:</p>
+              <p className="text-sm text-blue-800">{item.admin_response}</p>
+            </div>
+          )}
+        </div>
+      </div>
+    </Card>
+  )
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
@@ -134,7 +218,7 @@ const FeedbackPage = () => {
           </Card>
         )}
 
-        <Card className="p-6">
+        <Card className="p-6 mb-4">
           <h1 className="text-xl font-bold text-gray-900 mb-2">Share Your Feedback</h1>
           <p className="text-gray-500 text-sm mb-6">
             We value your opinion. Help us improve by sharing your thoughts about our products and services.
@@ -248,6 +332,26 @@ const FeedbackPage = () => {
             </Button>
           </form>
         </Card>
+
+        {/* My Feedback History with Admin Responses */}
+        {user && myFeedback.length > 0 && (
+          <Card className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-bold text-gray-900">My Feedback History</h2>
+              <button
+                onClick={fetchMyFeedback}
+                className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg"
+                title="Refresh"
+              >
+                <RefreshCw className="w-4 h-4" />
+              </button>
+            </div>
+            <p className="text-sm text-gray-500 mb-4">
+              View your submitted feedback and admin responses
+            </p>
+            {myFeedback.map(renderFeedbackItem)}
+          </Card>
+        )}
 
         {/* Contact Info */}
         <Card className="mt-4 p-4 bg-blue-50 border-blue-100">
