@@ -125,6 +125,20 @@ CREATE TABLE IF NOT EXISTS feedback (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- 8. PAYMENT ACCOUNTS TABLE (for admin to manage payment details)
+CREATE TABLE IF NOT EXISTS payment_accounts (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  provider TEXT NOT NULL CHECK (provider IN ('MTN', 'AIRTEL')),
+  account_name TEXT NOT NULL,
+  account_phone TEXT NOT NULL,
+  account_code TEXT,
+  instructions TEXT,
+  is_active BOOLEAN DEFAULT true,
+  display_order INTEGER DEFAULT 0,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
 
 -- Create indexes for better performance
 CREATE INDEX IF NOT EXISTS idx_products_category ON products(category);
@@ -136,6 +150,8 @@ CREATE INDEX IF NOT EXISTS idx_order_items_product_id ON order_items(product_id)
 CREATE INDEX IF NOT EXISTS idx_feedback_user_id ON feedback(user_id);
 CREATE INDEX IF NOT EXISTS idx_feedback_product_id ON feedback(product_id);
 CREATE INDEX IF NOT EXISTS idx_feedback_status ON feedback(status);
+CREATE INDEX IF NOT EXISTS idx_payment_accounts_provider ON payment_accounts(provider);
+CREATE INDEX IF NOT EXISTS idx_payment_accounts_active ON payment_accounts(is_active);
 
 
 -- Row Level Security (RLS) Policies
@@ -149,6 +165,7 @@ ALTER TABLE orders ENABLE ROW LEVEL SECURITY;
 ALTER TABLE order_items ENABLE ROW LEVEL SECURITY;
 ALTER TABLE payments ENABLE ROW LEVEL SECURITY;
 ALTER TABLE feedback ENABLE ROW LEVEL SECURITY;
+ALTER TABLE payment_accounts ENABLE ROW LEVEL SECURITY;
 
 
 -- Profiles: Users can read their own profile, admins can read all, anyone can read for reviews
@@ -248,6 +265,15 @@ CREATE POLICY "Admins can manage all feedback" ON feedback
     EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin')
   );
 
+-- Payment Accounts: Everyone can read active accounts, only admins can manage
+CREATE POLICY "Anyone can read active payment accounts" ON payment_accounts
+  FOR SELECT USING (is_active = true);
+
+CREATE POLICY "Admins can manage payment accounts" ON payment_accounts
+  FOR ALL USING (
+    EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin')
+  );
+
 
 
 
@@ -303,6 +329,12 @@ INSERT INTO suppliers (name, contact_person, phone, email, address) VALUES
 ('TechWholesale Rwanda', 'Jean Mukamana', '+250788123456', 'jean@techwholesale.rw', 'Kigali, Rwanda'),
 ('Campus Supplies Ltd', 'Marie Uwimana', '+250788234567', 'marie@campusupplies.rw', 'Kigali, Rwanda'),
 ('Digital Gadgets Store', 'Claude Niyonkuru', '+250788345678', 'claude@digitalgadgets.rw', 'Kigali, Rwanda')
+ON CONFLICT DO NOTHING;
+
+-- Insert sample payment accounts
+INSERT INTO payment_accounts (provider, account_name, account_phone, account_code, instructions, is_active, display_order) VALUES
+('MTN', 'UniMarket Business', '0788 000 000', '*182*7*1#', 'Dial *182*7*1# to pay', true, 1),
+('AIRTEL', 'UniMarket Business', '0780 000 000', '*185*7*1#', 'Dial *185*7*1# to pay', true, 2)
 ON CONFLICT DO NOTHING;
 
 -- Create default admin user

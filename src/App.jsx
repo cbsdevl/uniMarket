@@ -23,6 +23,7 @@ import AdminSuppliers from './pages/admin/AdminSuppliers'
 import AdminDelivery from './pages/admin/AdminDelivery'
 import AdminReports from './pages/admin/AdminReports'
 import AdminFeedback from './pages/admin/AdminFeedback'
+import AdminPaymentAccounts from './pages/admin/AdminPaymentAccounts'
 
 // Auth
 import LoginPage from './pages/auth/LoginPage'
@@ -187,6 +188,14 @@ function AppRoutes() {
         <ProtectedRoute adminOnly>
           <AdminLayout>
             <AdminFeedback />
+          </AdminLayout>
+        </ProtectedRoute>
+      } />
+      
+      <Route path="/admin/payment-accounts" element={
+        <ProtectedRoute adminOnly>
+          <AdminLayout>
+            <AdminPaymentAccounts />
           </AdminLayout>
         </ProtectedRoute>
       } />

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Header from '../../components/layout/Header'
 import BottomNav from '../../components/layout/BottomNav'
@@ -9,7 +9,8 @@ import { useCart } from '../../context/CartContext'
 import { useAuth } from '../../context/AuthContext'
 import { useOrders } from '../../context/OrderContext'
 import { formatCurrency } from '../../utils/helpers'
-import { CAMPUS_LOCATIONS, PAYMENT_METHOD_CONFIG, PAYMENT_PROVIDER_CONFIG } from '../../utils/constants'
+import { CAMPUS_LOCATIONS, PAYMENT_METHOD_CONFIG } from '../../utils/constants'
+import { supabase } from '../../lib/supabase'
 
 const CheckoutPage = () => {
   const navigate = useNavigate()
@@ -25,12 +26,38 @@ const CheckoutPage = () => {
   const [deliveryAddress, setDeliveryAddress] = useState(profile?.campus || '')
   const [phone, setPhone] = useState(profile?.phone || '')
   const [errors, setErrors] = useState({})
+  const [paymentAccounts, setPaymentAccounts] = useState([])
+  const [loadingAccounts, setLoadingAccounts] = useState(true)
+
+  useEffect(() => {
+    fetchPaymentAccounts()
+  }, [])
+
+  const fetchPaymentAccounts = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('payment_accounts')
+        .select('*')
+        .eq('is_active', true)
+        .order('display_order', { ascending: true })
+
+      if (error) throw error
+      setPaymentAccounts(data || [])
+    } catch (err) {
+      console.error('Error fetching payment accounts:', err)
+    } finally {
+      setLoadingAccounts(false)
+    }
+  }
 
   const cartTotal = getCartTotal()
   const discount = paymentMethod === 'FULL' ? cartTotal * 0.05 : 0
   const total = cartTotal - discount
   const depositAmount = paymentMethod === 'DEPOSIT' ? items.reduce((sum, item) => sum + (item.deposit_amount || item.price * 0.3) * item.quantity, 0) : 0
   const balanceDue = total - depositAmount
+
+  // Get the selected payment account details
+  const selectedAccount = paymentAccounts.find(acc => acc.provider === paymentProvider)
 
   const showMobileMoneyFields = paymentProvider === 'MTN' || paymentProvider === 'AIRTEL'
 
@@ -181,37 +208,71 @@ const CheckoutPage = () => {
           <Card className="p-4 mb-4">
             <h3 className="font-semibold text-gray-900 mb-4">Select Payment Provider</h3>
             
-            <div className="grid grid-cols-3 gap-2">
-              {Object.entries(PAYMENT_PROVIDER_CONFIG).map(([key, config]) => (
+            {loadingAccounts ? (
+              <div className="flex items-center justify-center py-4">
+                <div className="animate-spin w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full" />
+              </div>
+            ) : paymentAccounts.length === 0 ? (
+              <p className="text-sm text-gray-500 text-center py-4">
+                No payment accounts available. Please select Cash on Delivery.
+              </p>
+            ) : (
+              <div className="grid grid-cols-2 gap-2">
+                {paymentAccounts.map((account) => (
+                  <button
+                    key={account.id}
+                    type="button"
+                    onClick={() => setPaymentProvider(account.provider)}
+                    className={`p-3 rounded-lg border-2 text-center transition-colors ${
+                      paymentProvider === account.provider
+                        ? 'border-blue-600 bg-blue-50'
+                        : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                  >
+                    <span className="block font-medium text-sm">
+                      {account.provider === 'MTN' ? 'MTN Mobile Money' : 'Airtel Money'}
+                    </span>
+                    <span className="text-xs text-gray-500">{account.account_phone}</span>
+                  </button>
+                ))}
                 <button
-                  key={key}
                   type="button"
-                  onClick={() => setPaymentProvider(key)}
+                  onClick={() => setPaymentProvider('CASH')}
                   className={`p-3 rounded-lg border-2 text-center transition-colors ${
-                    paymentProvider === key
+                    paymentProvider === 'CASH'
                       ? 'border-blue-600 bg-blue-50'
                       : 'border-gray-200 hover:border-gray-300'
                   }`}
-                  style={{ 
-                    backgroundColor: paymentProvider === key ? config.color : 'white',
-                    color: paymentProvider === key ? config.textColor : '#374151'
-                  }}
                 >
-                  <span className="block font-medium text-sm">{config.label}</span>
+                  <span className="block font-medium text-sm">Cash on Delivery</span>
                 </button>
-              ))}
-            </div>
+              </div>
+            )}
           </Card>
 
-          {/* Mobile Money Details */}
-          {showMobileMoneyFields && (
+          {/* Mobile Money Details - Now shows actual payment account info */}
+          {showMobileMoneyFields && selectedAccount && (
             <Card className="p-4 mb-4 border-2 border-blue-500">
               <h3 className="font-semibold text-gray-900 mb-4">Payment Details</h3>
               
               <div className="space-y-4">
                 <p className="text-sm text-gray-600 bg-blue-50 p-3 rounded-lg">
-                  Pay to: <span className="font-bold">{paymentProvider === 'MTN' ? '0788 000 000' : '0780 000 000'}</span>
+                  Pay to: <span className="font-bold">{selectedAccount.account_name}</span>
+                  <br />
+                  Phone: <span className="font-bold">{selectedAccount.account_phone}</span>
                 </p>
+
+                {selectedAccount.account_code && (
+                  <p className="text-sm text-gray-600 bg-amber-50 p-3 rounded-lg">
+                    USSD Code: <span className="font-bold">{selectedAccount.account_code}</span>
+                  </p>
+                )}
+
+                {selectedAccount.instructions && (
+                  <p className="text-sm text-gray-600 p-3 rounded-lg">
+                    Instructions: {selectedAccount.instructions}
+                  </p>
+                )}
 
                 <Input
                   label="Your Name (as on mobile money)"
