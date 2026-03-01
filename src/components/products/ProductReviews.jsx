@@ -19,6 +19,7 @@ const ProductReviews = ({ productId }) => {
     setLoading(true)
     try {
       // Fetch product feedback - works for both logged in and anonymous users
+      // Include all statuses: pending, reviewed, resolved so anyone can see product reviews immediately
       const { data, error } = await supabase
         .from('feedback')
         .select(`
@@ -27,7 +28,7 @@ const ProductReviews = ({ productId }) => {
         `)
         .eq('product_id', productId)
         .eq('feedback_type', 'product')
-        .in('status', ['reviewed', 'resolved'])
+        .in('status', ['pending', 'reviewed', 'resolved'])
         .order('created_at', { ascending: false })
 
       if (error) throw error

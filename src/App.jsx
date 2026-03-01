@@ -26,6 +26,7 @@ import AdminFeedback from './pages/admin/AdminFeedback'
 
 // Auth
 import LoginPage from './pages/auth/LoginPage'
+import AuthCallback from './pages/auth/AuthCallback'
 
 // Protected Route Component
 const ProtectedRoute = ({ children, adminOnly = false }) => {
@@ -73,6 +74,8 @@ function AppRoutes() {
         user ? <Navigate to={profile?.role === USER_ROLES.ADMIN ? '/admin' : '/'} replace /> 
              : <LoginPage />
       } />
+      
+      <Route path="/auth/callback" element={<AuthCallback />} />
 
       {/* Customer Routes */}
       <Route path="/" element={
@@ -105,7 +108,7 @@ function AppRoutes() {
         </CartProvider>
       } />
       
-<Route path="/order/:id" element={
+      <Route path="/order/:id" element={
         <CartProvider>
           <OrderDetailPage />
         </CartProvider>

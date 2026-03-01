@@ -1,86 +1,58 @@
-# UniMarket Implementation Status
+# Google OAuth Implementation Plan - COMPLETED
 
-## Completed Tasks
+## Changes Made:
 
-### Category Management Feature
-- [x] 1. Create database table `categories` in supabase-setup.sql
-- [x] 2. Update supabase-setup.sql - Add seed data for categories
-- [x] 3. Update constants.js - Fix category IDs to match DB values (title case)
-- [x] 4. Create AdminCategories.jsx - New page for admin category CRUD
-- [x] 5. Update AdminSidebar.jsx - Add Categories nav item
-- [x] 6. Update App.jsx - Add route for AdminCategories
-- [x] 7. Update AdminProducts.jsx - Use dynamic categories from DB
-- [x] 8. Update HomePage.jsx - Use dynamic categories from DB
-- [x] 9. Update ProductCard.jsx - Display category properly
-- [x] 10. Update ProductDetailPage.jsx - Display category properly
+### 1. Updated `src/context/AuthContext.jsx`
+- Added `signInWithGoogle` function using Supabase's `signInWithOAuth` method
+- Added `signInWithGoogle` to the auth context value object
 
-### Customer Feedback Feature
-- [x] 1. Create database table `feedback` in supabase-setup.sql
-- [x] 2. Add RLS policies for feedback table
-- [x] 3. Create FeedbackPage.jsx - Customer feedback submission form
-- [x] 4. Create AdminFeedback.jsx - Admin feedback management page
-- [x] 5. Update App.jsx - Add routes for feedback pages
-- [x] 6. Update BottomNav.jsx - Add Feedback navigation item
-- [x] 7. Update AdminSidebar.jsx - Add Feedback nav item
+### 2. Updated `src/pages/auth/LoginPage.jsx`
+- Added Google Icon component
+- Added `signInWithGoogle` to useAuth destructuring
+- Added `handleGoogleSignIn` function
+- Added "Continue with Google" button to the login form
 
-### Product Reviews Feature (Public - All users can see)
-- [x] 1. Update RLS policy to allow ALL users (logged in and anonymous) to read product reviews
-- [x] 2. Create ProductReviews.jsx component to display product reviews
-- [x] 3. Update ProductDetailPage.jsx - Add Reviews tab with ProductReviews component
+### 3. Created `src/pages/auth/AuthCallback.jsx`
+- New callback page to handle OAuth redirect
+- Displays loading state while processing
+- Handles errors gracefully
 
-### Bug Fixes
-- [x] 1. Fixed `formatDistanceToNow` export in helpers.js
-- [x] 2. Fixed RLS policy for admin to read profiles (user names)
-- [x] 3. Moved Feedback menu item higher in AdminSidebar
+### 4. Updated `src/App.jsx`
+- Added import for AuthCallback component
+- Added route for `/auth/callback`
 
-## Summary
+## Setup Instructions for Google OAuth:
 
-### Category Management
-Admins can now:
-- Create, edit, delete categories
-- Set category icons and display order
-- Activate/deactivate categories
-- Categories are dynamically loaded in product forms and customer filters
+To make Google OAuth work, you need to configure your Supabase and Google Cloud Console:
 
-### Customer Feedback
-Customers can now:
-- Submit feedback with 5 types (general, product, service, bug, feature)
-- Rate with 1-5 stars
-- Select specific products for product feedback
-- View confirmation after submission
+### Step 1: Configure Google OAuth in Supabase Dashboard
+1. Go to your Supabase project dashboard
+2. Navigate to Authentication → Providers
+3. Enable Google provider
+4. Enter your Google Client ID and Client Secret
+5. Add your site URL (e.g., http://localhost:5173 for development)
 
-Admins can now:
-- View all customer feedback in a dashboard
-- Filter by status (pending, reviewed, resolved) and type
-- Respond to feedback with admin responses
-- Update feedback status
-- View feedback statistics
-- See user names who submitted feedback (after RLS fix)
+### Step 2: Configure Google Cloud Console
+1. Go to Google Cloud Console (https://console.cloud.google.com)
+2. Create a new project or select existing
+3. Go to APIs & Services → Credentials
+4. Create OAuth 2.0 Client ID
+5. Set authorized JavaScript origins:
+   - http://localhost:5173 (development)
+   - Your production URL
+6. Set authorized redirect URIs:
+   - https://your-project.supabase.co/auth/v1/callback
 
-### Product Reviews (PUBLIC - All Users)
-All users (logged in and not logged in) can now:
-- View product reviews from other users on product detail page
-- See rating distribution and average rating
-- Read comments and store responses
-- Reviews show user names and submission time
+### Step 3: Environment Variables
+Make sure your .env file has:
+```
+VITE_SUPABASE_URL=your-supabase-url
+VITE_SUPABASE_ANON_KEY=your-anon-key
+```
 
-## Database Changes Required
-
-Run these SQL commands in Supabase SQL Editor to apply the latest RLS policy fixes:
-
-```sql
--- Fix admin profiles read policy
-DROP POLICY IF EXISTS "Admins can read all profiles" ON profiles;
-CREATE POLICY "Admins can read all profiles" ON profiles
-  FOR SELECT USING (
-    EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin')
-  );
-
--- Update policy to allow ALL users (logged in and anonymous) to read product reviews
-DROP POLICY IF EXISTS "Users can read product feedback from others" ON feedback;
-DROP POLICY IF EXISTS "Anyone can read product reviews" ON feedback;
-CREATE POLICY "Anyone can read product reviews" ON feedback
-  FOR SELECT USING (
-    feedback_type = 'product' AND 
-    status IN ('reviewed', 'resolved')
-  );
+## Testing:
+1. Run `npm run dev`
+2. Navigate to /login
+3. Click "Continue with Google" button
+4. You should be redirected to Google for authentication
+5. After successful auth, you'll be redirected back and logged in

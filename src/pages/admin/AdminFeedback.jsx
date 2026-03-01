@@ -27,17 +27,59 @@ const AdminFeedback = () => {
   const fetchFeedback = async () => {
     setLoading(true)
     try {
-      const { data, error } = await supabase
+      // First, fetch all feedback
+      const { data: feedbackData, error: feedbackError } = await supabase
         .from('feedback')
-        .select(`
-          *,
-          profiles:user_id (name, email),
-          products:product_id (name)
-        `)
+        .select('*')
         .order('created_at', { ascending: false })
 
-      if (error) throw error
-      setFeedback(data || [])
+      if (feedbackError) throw feedbackError
+
+      // Get unique user IDs from feedback
+      const userIds = [...new Set(feedbackData?.map(f => f.user_id).filter(Boolean))]
+
+      let profilesMap = {}
+      
+      // If there are user IDs, fetch profiles
+      if (userIds.length > 0) {
+        const { data: profilesData, error: profilesError } = await supabase
+          .from('profiles')
+          .select('id, name, email')
+          .in('id', userIds)
+
+        if (!profilesError && profilesData) {
+          // Create a map of user_id to profile
+          profilesData.forEach(profile => {
+            profilesMap[profile.id] = profile
+          })
+        }
+      }
+
+      // Fetch products for feedback with product_id
+      const productIds = [...new Set(feedbackData?.map(f => f.product_id).filter(Boolean))]
+      let productsMap = {}
+
+      if (productIds.length > 0) {
+        const { data: productsData } = await supabase
+          .from('products')
+          .select('id, name')
+          .in('id', productIds)
+
+        if (productsData) {
+          productsData.forEach(product => {
+            productsMap[product.id] = product
+          })
+        }
+      }
+
+      // Merge feedback with profiles and products data
+      const mergedData = feedbackData?.map(item => ({
+        ...item,
+        profiles: profilesMap[item.user_id] || null,
+        products: productsMap[item.product_id] || null
+      })) || []
+
+      setFeedback(mergedData)
     } catch (err) {
       console.error('Error fetching feedback:', err)
     } finally {

@@ -151,7 +151,7 @@ ALTER TABLE payments ENABLE ROW LEVEL SECURITY;
 ALTER TABLE feedback ENABLE ROW LEVEL SECURITY;
 
 
--- Profiles: Users can read their own profile, admins can read all
+-- Profiles: Users can read their own profile, admins can read all, anyone can read for reviews
 CREATE POLICY "Users can read own profile" ON profiles
   FOR SELECT USING (auth.uid() = id);
 
@@ -163,6 +163,9 @@ CREATE POLICY "Admins can read all profiles" ON profiles
     EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin')
   );
 
+-- Allow anyone to read profiles for displaying reviewer names
+CREATE POLICY "Anyone can read profiles for reviews" ON profiles
+  FOR SELECT USING (true);
 
 -- Categories: Everyone can read active categories, only admins can modify
 CREATE POLICY "Anyone can read active categories" ON categories
@@ -234,10 +237,10 @@ CREATE POLICY "Users can create feedback" ON feedback
 CREATE POLICY "Users can read own feedback" ON feedback
   FOR SELECT USING (auth.uid() = user_id);
 
+-- Allow anyone (including anonymous) to read product reviews with all statuses (pending, reviewed, resolved)
 CREATE POLICY "Anyone can read product reviews" ON feedback
   FOR SELECT USING (
-    feedback_type = 'product' AND 
-    status IN ('reviewed', 'resolved')
+    feedback_type = 'product'
   );
 
 CREATE POLICY "Admins can manage all feedback" ON feedback
