@@ -1,3 +1,5 @@
+import { OrderProvider } from "../context/OrderContext"
+
 // Categories - Default categories (used as fallback when DB is unavailable)
 export const DEFAULT_CATEGORIES = [
   { id: 'flash-disks', name: 'Flash Disks', slug: 'flash-disks', icon: 'HardDrive', display_order: 1 },
@@ -35,7 +37,11 @@ export const PAYMENT_PROVIDER_CONFIG = {
   MTN: { label: 'MTN Mobile Money', description: 'Pay via MTN MoMo' },
   AIRTEL: { label: 'Airtel Money', description: 'Pay via Airtel Money' }
 }
-
+{
+  OrderProvider: {
+    discount_amount: 9
+  }
+}
 // Campus locations
 export const CAMPUS_LOCATIONS = [
   'Main Campus - Kigali',

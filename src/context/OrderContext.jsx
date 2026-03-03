@@ -52,7 +52,7 @@ export const OrderProvider = ({ children }) => {
     setLoading(true)
     setError(null)
     try {
-      const { items, paymentMethod, deliveryAddress, phone, userId, depositAmount, totalAmount, paymentProvider, paymentName, paymentPhone } = orderData
+      const { items, paymentMethod, deliveryAddress, phone, userId, depositAmount, totalAmount, discountAmount = 0, paymentProvider, paymentName, paymentPhone } = orderData
 
       // Calculate payment amount
       const paymentAmount = paymentMethod === 'DEPOSIT' ? depositAmount : totalAmount
@@ -70,6 +70,7 @@ export const OrderProvider = ({ children }) => {
           payment_phone: paymentPhone || null,
           payment_status: isMobileMoney ? 'PENDING' : null,
           total_amount: totalAmount,
+          discount_amount: discountAmount,
           deposit_amount: depositAmount || 0,
           balance_due: totalAmount - (depositAmount || 0),
           delivery_address: deliveryAddress,
@@ -80,15 +81,29 @@ export const OrderProvider = ({ children }) => {
 
       if (orderError) throw orderError
 
-      // Create order items
-      const orderItems = items.map(item => ({
-        order_id: order.id,
-        product_id: item.id,
-        quantity: item.quantity,
-        unit_price: item.price,
-        supplier_price: item.supplier_price,
-        subtotal: item.price * item.quantity
-      }))
+      // Calculate discount per item (proportional to item price)
+      const cartTotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0)
+      
+      const orderItems = items.map(item => {
+        const itemTotal = item.price * item.quantity
+        const itemDiscountRatio = cartTotal > 0 ? itemTotal / cartTotal : 0
+        const itemDiscountAmount = discountAmount * itemDiscountRatio
+        
+        // Calculate the discounted unit price (actual selling price after discount)
+        const discountPercent = cartTotal > 0 ? discountAmount / cartTotal : 0
+        const discountedUnitPrice = item.price * (1 - discountPercent)
+        
+        return {
+          order_id: order.id,
+          product_id: item.id,
+          quantity: item.quantity,
+          unit_price: item.price,
+          discounted_unit_price: discountedUnitPrice,
+          supplier_price: item.supplier_price || 0,
+          discount_amount: itemDiscountAmount,
+          subtotal: item.price * item.quantity
+        }
+      })
 
       const { error: itemsError } = await supabase
         .from('order_items')
@@ -159,10 +174,14 @@ export const OrderProvider = ({ children }) => {
       }
 
       if (newStatus === 'DELIVERED' && order?.order_items) {
-        // Calculate profit
+        // Calculate profit with discount consideration
         profit = order.order_items.reduce((sum, item) => {
           const cost = item.supplier_price || 0
-          return sum + ((item.unit_price - cost) * item.quantity)
+          // Use discounted_unit_price if available (full payment with discount)
+          // Otherwise use unit_price (regular price)
+          const sellingPrice = item.discounted_unit_price || item.unit_price
+          // Profit = (discounted_selling_price - supplier_price) * quantity
+          return sum + ((sellingPrice - cost) * item.quantity)
         }, 0)
         updateData.profit = profit
       }
@@ -194,7 +213,11 @@ export const OrderProvider = ({ children }) => {
     if (!order.order_items) return 0
     return order.order_items.reduce((total, item) => {
       const cost = item.supplier_price || 0
-      const profit = (item.unit_price - cost) * item.quantity
+      // Use discounted_unit_price if available (full payment with discount)
+      // Otherwise use unit_price (regular price)
+      const sellingPrice = item.discounted_unit_price || item.unit_price
+      // Profit = (discounted_selling_price - supplier_price) * quantity
+      const profit = (sellingPrice - cost) * item.quantity
       return total + profit
     }, 0)
   }

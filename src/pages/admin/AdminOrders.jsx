@@ -58,9 +58,14 @@ const AdminOrders = () => {
       }
 
       if (newStatus === 'DELIVERED' && order?.order_items) {
+        // Calculate real profit with discount consideration
         profit = order.order_items.reduce((sum, item) => {
           const cost = item.supplier_price || 0
-          return sum + ((item.unit_price - cost) * item.quantity)
+          // Use discounted_unit_price if available (full payment with discount)
+          // Otherwise use unit_price (regular price)
+          const sellingPrice = item.discounted_unit_price || item.unit_price
+          // Profit = (discounted_selling_price - supplier_price) * quantity
+          return sum + ((sellingPrice - cost) * item.quantity)
         }, 0)
         updateData.profit = profit
       }

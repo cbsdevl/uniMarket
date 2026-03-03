@@ -40,9 +40,24 @@ const AdminReports = () => {
 
       if (error) throw error
 
+      // Calculate real profit from order_items
+      const calculateRealProfit = (order) => {
+        if (!order.order_items || order.order_items.length === 0) return 0
+        return order.order_items.reduce((total, item) => {
+          const cost = item.supplier_price || 0
+          // Use discounted_unit_price if available, otherwise use unit_price
+          const sellingPrice = item.discounted_unit_price || item.unit_price
+          // Profit = (selling_price - supplier_price) * quantity
+          return total + ((sellingPrice - cost) * item.quantity)
+        }, 0)
+      }
+
       // Calculate stats
       const totalRevenue = orders?.reduce((sum, o) => sum + (o.total_amount || 0), 0) || 0
-      const totalProfit = orders?.reduce((sum, o) => sum + (o.profit || 0), 0) || 0
+      // Calculate real total profit from order_items
+      const totalProfit = orders?.reduce((sum, order) => {
+        return sum + calculateRealProfit(order)
+      }, 0) || 0
       const totalOrders = orders?.length || 0
       const avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0
 

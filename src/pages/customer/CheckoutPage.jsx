@@ -118,6 +118,7 @@ const CheckoutPage = () => {
       userId: user.id,
       depositAmount,
       totalAmount: total,
+      discountAmount: discount,
       paymentProvider: paymentProvider,
       paymentName: paymentName || null,
       paymentPhone: paymentPhone || null
