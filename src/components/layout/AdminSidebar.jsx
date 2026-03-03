@@ -12,7 +12,8 @@ import {
   Shield,
   Tag,
   MessageSquare,
-  CreditCard
+  CreditCard,
+  Settings
 } from 'lucide-react'
 
 
@@ -32,7 +33,8 @@ const AdminSidebar = ({ isOpen, onClose }) => {
     { path: '/admin/suppliers', icon: Users, label: 'Suppliers' },
     { path: '/admin/delivery', icon: Truck, label: 'Delivery' },
     { path: '/admin/payment-accounts', icon: CreditCard, label: 'Payment Accounts' },
-    { path: '/admin/reports', icon: BarChart3, label: 'Reports' }
+    { path: '/admin/reports', icon: BarChart3, label: 'Reports' },
+    { path: '/admin/settings', icon: Settings, label: 'Settings' }
   ]
 
   return (

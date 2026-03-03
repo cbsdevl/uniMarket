@@ -24,6 +24,7 @@ import AdminDelivery from './pages/admin/AdminDelivery'
 import AdminReports from './pages/admin/AdminReports'
 import AdminFeedback from './pages/admin/AdminFeedback'
 import AdminPaymentAccounts from './pages/admin/AdminPaymentAccounts'
+import AdminSettings from './pages/admin/AdminSettings'
 
 // Auth
 import LoginPage from './pages/auth/LoginPage'
@@ -196,6 +197,14 @@ function AppRoutes() {
         <ProtectedRoute adminOnly>
           <AdminLayout>
             <AdminPaymentAccounts />
+          </AdminLayout>
+        </ProtectedRoute>
+      } />
+      
+      <Route path="/admin/settings" element={
+        <ProtectedRoute adminOnly>
+          <AdminLayout>
+            <AdminSettings />
           </AdminLayout>
         </ProtectedRoute>
       } />

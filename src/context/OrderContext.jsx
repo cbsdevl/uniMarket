@@ -161,7 +161,7 @@ export const OrderProvider = ({ children }) => {
       if (newStatus === 'DELIVERED' && order?.order_items) {
         // Calculate profit
         profit = order.order_items.reduce((sum, item) => {
-          const cost = item.product?.supplier_price || 0
+          const cost = item.supplier_price || 0
           return sum + ((item.unit_price - cost) * item.quantity)
         }, 0)
         updateData.profit = profit

@@ -28,9 +28,11 @@ const CheckoutPage = () => {
   const [errors, setErrors] = useState({})
   const [paymentAccounts, setPaymentAccounts] = useState([])
   const [loadingAccounts, setLoadingAccounts] = useState(true)
+  const [discountSettings, setDiscountSettings] = useState({ enabled: true, percent: 5 })
 
   useEffect(() => {
     fetchPaymentAccounts()
+    fetchDiscountSettings()
   }, [])
 
   const fetchPaymentAccounts = async () => {
@@ -50,15 +52,34 @@ const CheckoutPage = () => {
     }
   }
 
+  const fetchDiscountSettings = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('settings')
+        .select('*')
+        .in('key', ['full_payment_discount_enabled', 'full_payment_discount_percent'])
+
+      if (error) throw error
+      
+      const enabledSetting = data?.find(s => s.key === 'full_payment_discount_enabled')
+      const percentSetting = data?.find(s => s.key === 'full_payment_discount_percent')
+      
+      setDiscountSettings({
+        enabled: enabledSetting?.value !== 'false',
+        percent: parseInt(percentSetting?.value) || 5
+      })
+    } catch (err) {
+      console.error('Error fetching discount settings:', err)
+    }
+  }
+
   const cartTotal = getCartTotal()
-  const discount = paymentMethod === 'FULL' ? cartTotal * 0.05 : 0
+  const discount = paymentMethod === 'FULL' && discountSettings.enabled ? cartTotal * (discountSettings.percent / 100) : 0
   const total = cartTotal - discount
   const depositAmount = paymentMethod === 'DEPOSIT' ? items.reduce((sum, item) => sum + (item.deposit_amount || item.price * 0.3) * item.quantity, 0) : 0
   const balanceDue = total - depositAmount
 
-  // Get the selected payment account details
   const selectedAccount = paymentAccounts.find(acc => acc.provider === paymentProvider)
-
   const showMobileMoneyFields = paymentProvider === 'MTN' || paymentProvider === 'AIRTEL'
 
   const validateForm = () => {
@@ -67,7 +88,9 @@ const CheckoutPage = () => {
     if (!phone) newErrors.phone = 'Phone number is required'
     else if (phone.length < 10) newErrors.phone = 'Please enter a valid phone number'
     
-    if (paymentProvider && paymentProvider !== 'CASH') {
+    if (!paymentProvider) {
+      newErrors.paymentProvider = 'Please select a payment provider'
+    } else if (paymentProvider === 'MTN' || paymentProvider === 'AIRTEL') {
       if (!paymentName) newErrors.paymentName = 'Your name is required'
       if (!paymentPhone) newErrors.paymentPhone = 'Mobile money phone is required'
     }
@@ -95,7 +118,7 @@ const CheckoutPage = () => {
       userId: user.id,
       depositAmount,
       totalAmount: total,
-      paymentProvider: paymentProvider || 'CASH',
+      paymentProvider: paymentProvider,
       paymentName: paymentName || null,
       paymentPhone: paymentPhone || null
     }
@@ -133,7 +156,6 @@ const CheckoutPage = () => {
       
       <main className="p-4 space-y-4">
         <form onSubmit={handleSubmit}>
-          {/* Delivery Address */}
           <Card className="p-4 mb-4">
             <h3 className="font-semibold text-gray-900 mb-4">Delivery Details</h3>
             
@@ -168,7 +190,6 @@ const CheckoutPage = () => {
             </div>
           </Card>
 
-          {/* Payment Method */}
           <Card className="p-4 mb-4">
             <h3 className="font-semibold text-gray-900 mb-4">Payment Method</h3>
             
@@ -196,15 +217,14 @@ const CheckoutPage = () => {
                       <p className="text-xs text-gray-500">{config.description}</p>
                     </div>
                   </div>
-                  {key === 'FULL' && (
-                    <span className="text-xs font-medium text-green-600">5% OFF</span>
+                  {key === 'FULL' && discountSettings.enabled && (
+                    <span className="text-xs font-medium text-green-600">{discountSettings.percent}% OFF</span>
                   )}
                 </label>
               ))}
             </div>
           </Card>
 
-          {/* Mobile Money Provider */}
           <Card className="p-4 mb-4">
             <h3 className="font-semibold text-gray-900 mb-4">Select Payment Provider</h3>
             
@@ -213,8 +233,8 @@ const CheckoutPage = () => {
                 <div className="animate-spin w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full" />
               </div>
             ) : paymentAccounts.length === 0 ? (
-              <p className="text-sm text-gray-500 text-center py-4">
-                No payment accounts available. Please select Cash on Delivery.
+              <p className="text-sm text-red-500 text-center py-4">
+                No payment accounts available. Please contact support.
               </p>
             ) : (
               <div className="grid grid-cols-2 gap-2">
@@ -235,22 +255,13 @@ const CheckoutPage = () => {
                     <span className="text-xs text-gray-500">{account.account_phone}</span>
                   </button>
                 ))}
-                <button
-                  type="button"
-                  onClick={() => setPaymentProvider('CASH')}
-                  className={`p-3 rounded-lg border-2 text-center transition-colors ${
-                    paymentProvider === 'CASH'
-                      ? 'border-blue-600 bg-blue-50'
-                      : 'border-gray-200 hover:border-gray-300'
-                  }`}
-                >
-                  <span className="block font-medium text-sm">Cash on Delivery</span>
-                </button>
               </div>
+            )}
+            {errors.paymentProvider && (
+              <p className="mt-2 text-sm text-red-500">{errors.paymentProvider}</p>
             )}
           </Card>
 
-          {/* Mobile Money Details - Now shows actual payment account info */}
           {showMobileMoneyFields && selectedAccount && (
             <Card className="p-4 mb-4 border-2 border-blue-500">
               <h3 className="font-semibold text-gray-900 mb-4">Payment Details</h3>
@@ -275,7 +286,7 @@ const CheckoutPage = () => {
                 )}
 
                 <Input
-                  label="Your Name (as on mobile money)"
+                  label="Your Name (as on mobile wallet)"
                   type="text"
                   value={paymentName}
                   onChange={(e) => setPaymentName(e.target.value)}
@@ -284,7 +295,7 @@ const CheckoutPage = () => {
                 />
 
                 <Input
-                  label="Mobile Money Phone Number"
+                  label="Mobile Wallet Phone Number"
                   type="tel"
                   value={paymentPhone}
                   onChange={(e) => setPaymentPhone(e.target.value)}
@@ -295,7 +306,6 @@ const CheckoutPage = () => {
             </Card>
           )}
 
-          {/* Order Summary */}
           <Card className="p-4 mb-4">
             <h3 className="font-semibold text-gray-900 mb-4">Order Summary</h3>
             
@@ -332,7 +342,6 @@ const CheckoutPage = () => {
             </div>
           </Card>
 
-          {/* Submit Button */}
           {errors.submit && (
             <div className="bg-red-50 text-red-600 p-3 rounded-xl text-sm mb-4">
               {errors.submit}

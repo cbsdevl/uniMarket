@@ -27,15 +27,13 @@ export const ORDER_STATUS_CONFIG = {
 // Payment method labels
 export const PAYMENT_METHOD_CONFIG = {
   DEPOSIT: { label: 'Deposit First', description: 'Pay deposit now, balance on delivery', discount: 0 },
-  COD: { label: 'Cash on Delivery', description: 'Pay on delivery (campus only)', discount: 0 },
   FULL: { label: 'Full Payment', description: 'Pay full amount now & get discount', discount: 5 }
 }
 
 // Payment provider labels
 export const PAYMENT_PROVIDER_CONFIG = {
   MTN: { label: 'MTN Mobile Money', description: 'Pay via MTN MoMo' },
-  AIRTEL: { label: 'Airtel Money', description: 'Pay via Airtel Money' },
-  CASH: { label: 'Cash on Delivery', description: 'Pay when receiving order' }
+  AIRTEL: { label: 'Airtel Money', description: 'Pay via Airtel Money' }
 }
 
 // Campus locations
