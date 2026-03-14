@@ -1,15 +1,17 @@
-# Advanced Financial Management TODO
+# Fix Admin Layout Duplicates - TODO List
 
-Reports & Analytics ✅ completed. New task: Advanced Financial Management in admin portal.
+**Status**: In Progress
 
-**Features to implement:**
-### 1. New AdminFinance page (/admin/finance)
-### 2. Add sidebar nav entry
-### 3. Fetch all payments, deposits, balances
-### 4. P&L statement, cash flow, AR/AP aging
-### 5. Profitability analysis by supplier/category
-### 6. Export CSV/PDF
-### 7. Payment verification dashboard
-
-**Next step: Create AdminFinance.jsx skeleton**
+## Steps from Approved Plan:
+- [ ] 1. Create this TODO.md
+- [ ] 2. Read all src/pages/admin/*.jsx contents
+- [ ] 3. Remove duplicate layouts/AdminSidebar from all 11 admin pages
+  - Delete import AdminSidebar
+  - Remove <div className="flex min-h-screen bg-gray-50">
+  - Remove <AdminSidebar />
+  - Remove <main className="flex-1 p-6 lg:ml-80 lg:p-8">, unwrap content into fragments <>
+- [ ] 4. Edit TODO-admin-layout.md to mark fully complete
+- [ ] 5. Verify no lint errors
+- [ ] 6. Test: npm run dev, login admin, check /admin and subroutes have single sidebar
+- [ ] 7. Update TODO.md complete, attempt_completion
 
