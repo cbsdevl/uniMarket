@@ -22,6 +22,7 @@ import AdminOrders from './pages/admin/AdminOrders'
 import AdminSuppliers from './pages/admin/AdminSuppliers'
 import AdminDelivery from './pages/admin/AdminDelivery'
 import AdminReports from './pages/admin/AdminReports'
+import AdminFinance from './pages/admin/AdminFinance'
 import AdminFeedback from './pages/admin/AdminFeedback'
 import AdminPaymentAccounts from './pages/admin/AdminPaymentAccounts'
 import AdminSettings from './pages/admin/AdminSettings'
@@ -201,6 +202,13 @@ function AppRoutes() {
         </ProtectedRoute>
       } />
       
+      <Route path="/admin/finance" element={
+        <ProtectedRoute adminOnly>
+          <AdminLayout>
+            <AdminFinance />
+          </AdminLayout>
+        </ProtectedRoute>
+      } />
       <Route path="/admin/settings" element={
         <ProtectedRoute adminOnly>
           <AdminLayout>

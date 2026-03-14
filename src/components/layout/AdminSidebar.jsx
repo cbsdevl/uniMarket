@@ -6,6 +6,7 @@ import {
   Truck, 
   Users, 
   BarChart3,
+  DollarSign,
   LogOut,
   X,
   ChevronRight,
@@ -33,7 +34,8 @@ const AdminSidebar = ({ isOpen, onClose }) => {
     { path: '/admin/suppliers', icon: Users, label: 'Suppliers' },
     { path: '/admin/delivery', icon: Truck, label: 'Delivery' },
     { path: '/admin/payment-accounts', icon: CreditCard, label: 'Payment Accounts' },
-    { path: '/admin/reports', icon: BarChart3, label: 'Reports' },
+{ path: '/admin/reports', icon: BarChart3, label: 'Reports & Analytics' },
+    { path: '/admin/finance', icon: DollarSign, label: 'Financial Management' },
     { path: '/admin/settings', icon: Settings, label: 'Settings' }
   ]
 
