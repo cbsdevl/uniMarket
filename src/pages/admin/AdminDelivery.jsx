@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
-import { Truck, CheckCircle, MapPin, Phone, Package } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import { Truck, CheckCircle, MapPin, Phone, Package, QrCode } from 'lucide-react'
 import AdminSidebar from '../../components/layout/AdminSidebar'
 import Card from '../../components/common/Card'
 import Button from '../../components/common/Button'
@@ -8,6 +9,7 @@ import { supabase } from '../../lib/supabase'
 import { formatCurrency } from '../../utils/helpers'
 
 const AdminDelivery = () => {
+  const navigate = useNavigate()
   const [orders, setOrders] = useState([])
   const [loading, setLoading] = useState(true)
 
@@ -76,9 +78,18 @@ const AdminDelivery = () => {
       <AdminSidebar />
       
       <main className="flex-1 p-6 lg:p-8">
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">Delivery Management</h1>
-          <p className="text-gray-500 mt-1">Track and manage deliveries</p>
+        <div className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Delivery Management</h1>
+            <p className="text-gray-500 mt-1">Track and manage deliveries</p>
+          </div>
+          <Button 
+            onClick={() => navigate('/admin/scanner')} 
+            className="flex items-center gap-2 self-start py-3 bg-blue-600 hover:bg-blue-700 w-full sm:w-auto justify-center shadow-lg shadow-blue-200"
+          >
+            <QrCode className="w-5 h-5" />
+            <span className="font-semibold">Scan Delivery QR</span>
+          </Button>
         </div>
 
         <div className="grid grid-cols-2 gap-4 mb-8">

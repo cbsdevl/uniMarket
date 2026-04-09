@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import QRCode from 'react-qr-code'
 import Header from '../../components/layout/Header'
 import BottomNav from '../../components/layout/BottomNav'
 import Card from '../../components/common/Card'
@@ -122,6 +123,30 @@ const OrderDetailPage = () => {
             })}
           </div>
         </Card>
+
+        {/* Verification QR Code */}
+        {order.qr_token && (
+          <Card className="p-6 flex flex-col items-center justify-center bg-white border-2 border-blue-100 shadow-sm relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-blue-50 rounded-bl-full -z-10 opacity-50" />
+            <h3 className="font-semibold text-gray-900 mb-2 text-center text-lg">Delivery Verification Code</h3>
+            <p className="text-sm text-gray-500 text-center mb-6 max-w-[280px]">
+              Show this unique QR code to the delivery personnel upon delivery to securely verify and complete your order.
+            </p>
+            <div className="bg-white p-3 rounded-2xl shadow-[0_0_15px_rgba(0,0,0,0.05)] border border-gray-100">
+              <QRCode
+                value={JSON.stringify({ orderId: order.id, token: order.qr_token })}
+                size={220}
+                level="M"
+                style={{ height: "auto", maxWidth: "100%", width: "100%" }}
+              />
+            </div>
+            {order.status === 'OUT_FOR_DELIVERY' && (
+              <div className="mt-6 px-4 py-2 bg-blue-50 text-blue-700 rounded-full text-sm font-medium animate-pulse">
+                Order is on the way!
+              </div>
+            )}
+          </Card>
+        )}
 
         {/* Order Items */}
         <Card className="p-4">

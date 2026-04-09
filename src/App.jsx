@@ -21,6 +21,7 @@ import AdminCategories from './pages/admin/AdminCategories'
 import AdminOrders from './pages/admin/AdminOrders'
 import AdminSuppliers from './pages/admin/AdminSuppliers'
 import AdminDelivery from './pages/admin/AdminDelivery'
+import DeliveryScannerPage from './pages/admin/DeliveryScannerPage'
 import AdminReports from './pages/admin/AdminReports'
 import AdminFinance from './pages/admin/AdminFinance'
 import AdminFeedback from './pages/admin/AdminFeedback'
@@ -175,6 +176,12 @@ function AppRoutes() {
           <AdminLayout>
             <AdminDelivery />
           </AdminLayout>
+        </ProtectedRoute>
+      } />
+
+      <Route path="/admin/scanner" element={
+        <ProtectedRoute adminOnly>
+          <DeliveryScannerPage />
         </ProtectedRoute>
       } />
       
