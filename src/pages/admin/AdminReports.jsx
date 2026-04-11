@@ -143,7 +143,7 @@ const AdminReports = () => {
   if (loading) {
     return (
       <div className="flex min-h-screen bg-gray-50">
-        <AdminSidebar />
+
         <main className="flex-1 p-6 lg:p-8 flex items-center justify-center">
           <div className="animate-spin w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full" />
         </main>
@@ -153,7 +153,7 @@ const AdminReports = () => {
 
   return (
     <div className="flex min-h-screen bg-gray-50">
-      <AdminSidebar />
+
 
       <main className="flex-1 p-6 lg:p-8">
         <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
