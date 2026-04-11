@@ -53,11 +53,11 @@ const AdminDashboard = () => {
 
       // Calculate stats
       const totalOrders = orders?.length || 0
-      const pendingOrders = orders?.filter(o => 
+      const pendingOrders = orders?.filter(o =>
         ['PENDING_PAYMENT', 'PENDING_CONFIRMATION'].includes(o.status)
       ).length || 0
       const totalRevenue = orders?.reduce((sum, o) => sum + (o.total_amount || 0), 0) || 0
-      
+
       // Calculate real total profit from order_items
       const totalProfit = orders?.reduce((sum, order) => {
         return sum + calculateRealProfit(order)
@@ -103,7 +103,7 @@ const AdminDashboard = () => {
   return (
     <div className="flex min-h-screen bg-gray-50">
       <AdminSidebar />
-      
+
       <main className="flex-1 p-6 lg:p-8">
         {/* Header */}
         <div className="mb-8">

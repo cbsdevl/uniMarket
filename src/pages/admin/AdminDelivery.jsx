@@ -46,7 +46,7 @@ const AdminDelivery = () => {
   const handleStatusUpdate = async (orderId, newStatus) => {
     try {
       let updateData = { status: newStatus }
-      
+
       if (newStatus === 'DELIVERED') {
         const order = orders.find(o => o.id === orderId)
         if (order?.order_items) {
@@ -76,15 +76,15 @@ const AdminDelivery = () => {
   return (
     <div className="flex min-h-screen bg-gray-50">
       <AdminSidebar />
-      
+
       <main className="flex-1 p-6 lg:p-8">
         <div className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Delivery Management</h1>
             <p className="text-gray-500 mt-1">Track and manage deliveries</p>
           </div>
-          <Button 
-            onClick={() => navigate('/admin/scanner')} 
+          <Button
+            onClick={() => navigate('/admin/scanner')}
             className="flex items-center gap-2 self-start py-3 bg-blue-600 hover:bg-blue-700 w-full sm:w-auto justify-center shadow-lg shadow-blue-200"
           >
             <QrCode className="w-5 h-5" />

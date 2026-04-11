@@ -44,20 +44,20 @@ const AdminSuppliers = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    
+
     try {
       if (editingSupplier) {
         const { error } = await supabase
           .from('suppliers')
           .update(formData)
           .eq('id', editingSupplier.id)
-        
+
         if (error) throw error
       } else {
         const { error } = await supabase
           .from('suppliers')
           .insert([formData])
-        
+
         if (error) throw error
       }
 
@@ -117,7 +117,7 @@ const AdminSuppliers = () => {
   return (
     <div className="flex min-h-screen bg-gray-50">
       <AdminSidebar />
-      
+
       <main className="flex-1 p-6 lg:p-8">
         <div className="flex items-center justify-between mb-8">
           <div>
@@ -179,7 +179,7 @@ const AdminSuppliers = () => {
                     </button>
                   </div>
                 </div>
-                
+
                 <div className="space-y-2 text-sm">
                   {supplier.phone && (
                     <div className="flex items-center gap-2 text-gray-600">
@@ -221,7 +221,7 @@ const AdminSuppliers = () => {
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             required
           />
-          
+
           <Input
             label="Contact Person"
             value={formData.contact_person}

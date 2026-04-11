@@ -95,7 +95,7 @@ const AdminReports = () => {
       const avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0
 
       // Calculate trends (simplified: current vs previous month from monthlyData)
-      const revenueChange = monthlyData[0] && monthlyData[1] 
+      const revenueChange = monthlyData[0] && monthlyData[1]
         ? ((monthlyData[0].revenue - monthlyData[1].revenue) / monthlyData[1].revenue * 100).toFixed(1)
         : 0
       const revenueChangeType = revenueChange > 0 ? 'increase' : revenueChange < 0 ? 'decrease' : null
@@ -154,7 +154,7 @@ const AdminReports = () => {
   return (
     <div className="flex min-h-screen bg-gray-50">
       <AdminSidebar />
-      
+
       <main className="flex-1 p-6 lg:p-8">
         <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
@@ -163,7 +163,7 @@ const AdminReports = () => {
           </div>
           <div className="flex items-center gap-2">
             <label className="text-sm font-medium text-gray-700">Date Range:</label>
-            <select 
+            <select
               value={dateRange}
               onChange={(e) => setDateRange(e.target.value)}
               className="px-3 py-1.5 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
@@ -218,7 +218,7 @@ const AdminReports = () => {
                   <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
                   <XAxis dataKey="month" stroke="#64748B" fontSize={12} />
                   <YAxis stroke="#64748B" fontSize={12} />
-                  <Tooltip 
+                  <Tooltip
                     formatter={(value) => formatCurrency(value)}
                     contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}
                   />
@@ -261,8 +261,8 @@ const AdminReports = () => {
             <div className="flex flex-wrap gap-4 mt-4 justify-center">
               {categoryData.map((entry, index) => (
                 <div key={entry.name} className="flex items-center gap-2">
-                  <div 
-                    className="w-3 h-3 rounded-full" 
+                  <div
+                    className="w-3 h-3 rounded-full"
                     style={{ backgroundColor: COLORS[index % COLORS.length] }}
                   />
                   <span className="text-sm text-gray-600">{entry.name}</span>

@@ -10,7 +10,7 @@ const AdminSettings = () => {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState({ type: '', text: '' })
-  
+
   const [discountEnabled, setDiscountEnabled] = useState(true)
   const [discountPercent, setDiscountPercent] = useState(5)
 
@@ -72,7 +72,7 @@ const AdminSettings = () => {
       if (percentError) throw percentError
 
       setMessage({ type: 'success', text: 'Settings saved successfully!' })
-      
+
       // Clear message after 3 seconds
       setTimeout(() => setMessage({ type: '', text: '' }), 3000)
     } catch (err) {
@@ -102,7 +102,7 @@ const AdminSettings = () => {
   return (
     <div className="flex min-h-screen bg-gray-50">
       <AdminSidebar />
-      
+
       <main className="flex-1 p-6 lg:p-8">
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
@@ -190,11 +190,10 @@ const AdminSettings = () => {
 
           {/* Message */}
           {message.text && (
-            <div className={`mb-4 p-3 rounded-lg text-sm ${
-              message.type === 'success' 
-                ? 'bg-green-50 text-green-700' 
+            <div className={`mb-4 p-3 rounded-lg text-sm ${message.type === 'success'
+                ? 'bg-green-50 text-green-700'
                 : 'bg-red-50 text-red-700'
-            }`}>
+              }`}>
               {message.text}
             </div>
           )}

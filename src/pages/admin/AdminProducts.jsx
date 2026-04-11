@@ -59,7 +59,7 @@ const AdminProducts = () => {
 
       if (error) throw error
       setCategories(data || [])
-      
+
       // Set default category if not editing
       if (data && data.length > 0 && !editingProduct) {
         setFormData(prev => ({ ...prev, category: data[0].name }))
@@ -77,7 +77,7 @@ const AdminProducts = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    
+
     const productData = {
       name: formData.name,
       description: formData.description,
@@ -95,13 +95,13 @@ const AdminProducts = () => {
           .from('products')
           .update(productData)
           .eq('id', editingProduct.id)
-        
+
         if (error) throw error
       } else {
         const { error } = await supabase
           .from('products')
           .insert([productData])
-        
+
         if (error) throw error
       }
 
@@ -166,7 +166,7 @@ const AdminProducts = () => {
   return (
     <div className="flex min-h-screen bg-gray-50">
       <AdminSidebar />
-      
+
       <main className="flex-1 p-6 lg:p-8">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
@@ -272,7 +272,7 @@ const AdminProducts = () => {
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             required
           />
-          
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Description

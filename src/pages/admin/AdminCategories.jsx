@@ -23,7 +23,7 @@ const AdminCategories = () => {
   })
 
   const iconOptions = [
-    'Package', 'HardDrive', 'Zap', 'BookOpen', 'Battery', 
+    'Package', 'HardDrive', 'Zap', 'BookOpen', 'Battery',
     'Smartphone', 'Laptop', 'Headphones', 'Camera', 'Watch',
     'Gift', 'ShoppingBag', 'Home', 'Car', 'Bike'
   ]
@@ -63,7 +63,7 @@ const AdminCategories = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    
+
     const categoryData = {
       name: formData.name,
       slug: formData.slug,
@@ -79,13 +79,13 @@ const AdminCategories = () => {
           .from('categories')
           .update(categoryData)
           .eq('id', editingCategory.id)
-        
+
         if (error) throw error
       } else {
         const { error } = await supabase
           .from('categories')
           .insert([categoryData])
-        
+
         if (error) throw error
       }
 
@@ -132,18 +132,18 @@ const AdminCategories = () => {
   const handleMoveOrder = async (category, direction) => {
     const currentIndex = categories.findIndex(c => c.id === category.id)
     const newIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1
-    
+
     if (newIndex < 0 || newIndex >= categories.length) return
 
     const targetCategory = categories[newIndex]
-    
+
     try {
       // Swap display orders
       await supabase
         .from('categories')
         .update({ display_order: targetCategory.display_order })
         .eq('id', category.id)
-      
+
       await supabase
         .from('categories')
         .update({ display_order: category.display_order })
@@ -174,7 +174,7 @@ const AdminCategories = () => {
   return (
     <div className="flex min-h-screen bg-gray-50">
       <AdminSidebar />
-      
+
       <main className="flex-1 p-6 lg:p-8">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
@@ -305,7 +305,7 @@ const AdminCategories = () => {
             onChange={(e) => handleNameChange(e.target.value)}
             required
           />
-          
+
           <Input
             label="Slug (URL-friendly name)"
             value={formData.slug}

@@ -130,7 +130,7 @@ const CheckoutPage = () => {
     
     if (result.success) {
       clearCart()
-      navigate('/orders')
+      navigate(`/order/${result.order.id}?new=1`)
     } else {
       setErrors({ submit: result.error })
     }

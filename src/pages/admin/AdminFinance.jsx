@@ -79,7 +79,7 @@ const AdminFinance = () => {
           categoryPL[category] = (categoryPL[category] || 0) + (item.subtotal || 0)
         })
       })
-      setProfitLoss(Object.entries(categoryPL).sort((a,b) => b[1] - a[1]))
+      setProfitLoss(Object.entries(categoryPL).sort((a, b) => b[1] - a[1]))
 
       // AR Aging - real calculation
       const now = new Date()
@@ -102,12 +102,12 @@ const AdminFinance = () => {
       ['Category', 'Revenue'],
       ...profitLoss.map(([cat, rev]) => [cat, formatCurrency(rev)])
     ].map(row => row.join(',')).join('\n')
-    
+
     const blob = new Blob([csv], { type: 'text/csv' })
     const url = window.URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `financials-${new Date().toISOString().slice(0,10)}.csv`
+    a.download = `financials-${new Date().toISOString().slice(0, 10)}.csv`
     a.click()
   }
 
@@ -125,7 +125,7 @@ const AdminFinance = () => {
   return (
     <div className="flex min-h-screen bg-gray-50">
       <AdminSidebar />
-      
+
       <main className="flex-1 p-6 lg:p-8">
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-gray-900">Financial Management</h1>
@@ -165,7 +165,7 @@ const AdminFinance = () => {
           <Card className="p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-semibold text-gray-900">P&L by Category</h3>
-              <button 
+              <button
                 onClick={exportCSV}
                 className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700 font-medium"
               >
@@ -192,14 +192,14 @@ const AdminFinance = () => {
           <Card className="p-6">
             <h3 className="font-semibold text-gray-900 mb-6">Quick Actions</h3>
             <div className="space-y-3">
-              <button 
+              <button
                 onClick={() => alert('Navigate to pending payments verification (integrates with AdminPaymentAccounts)')}
                 className="w-full flex items-center gap-3 p-3 bg-blue-50 border-2 border-dashed border-blue-200 rounded-xl hover:bg-blue-100 transition-all text-left cursor-pointer"
               >
                 <DollarSign className="w-5 h-5 text-blue-600 flex-shrink-0" />
                 <span className="font-medium text-blue-900">Verify Pending Payments</span>
               </button>
-              <button 
+              <button
                 onClick={() => {
                   exportCSV()
                   alert('P&L Report exported! Check downloads.')
@@ -209,7 +209,7 @@ const AdminFinance = () => {
                 <TrendingUp className="w-5 h-5 text-emerald-600 flex-shrink-0" />
                 <span className="font-medium text-emerald-900">Generate P&L Report</span>
               </button>
-              <button 
+              <button
                 onClick={() => alert('Cash flow forecast generated (future integration with projections)')}
                 className="w-full flex items-center gap-3 p-3 bg-purple-50 border-2 border-dashed border-purple-200 rounded-xl hover:bg-purple-100 transition-all text-left cursor-pointer"
               >
