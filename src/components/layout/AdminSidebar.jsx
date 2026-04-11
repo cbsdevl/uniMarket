@@ -19,25 +19,27 @@ import {
 
 
 import { useAuth } from '../../context/AuthContext'
+import { RESPONSIBILITIES, PAGE_RESPONSIBILITY_MAP } from '../../utils/constants'
 
 
 const AdminSidebar = ({ isOpen, onClose }) => {
-  const { signOut, profile } = useAuth()
+  const { signOut, profile, pinRole, responsibilities, hasPageAccess } = useAuth()
   const location = useLocation()
 
   const navItems = [
     { path: '/admin', icon: LayoutDashboard, label: 'Dashboard' },
     { path: '/admin/products', icon: Package, label: 'Products' },
     { path: '/admin/categories', icon: Tag, label: 'Categories' },
-    { path: '/admin/orders', icon: ShoppingCart, label: 'Orders' },
+    { path: '/admin/orders', icon: ShoppingCart, label: 'Orders', pageName: 'AdminOrders' },
     { path: '/admin/feedback', icon: MessageSquare, label: 'Feedback' },
     { path: '/admin/suppliers', icon: Users, label: 'Suppliers' },
-    { path: '/admin/delivery', icon: Truck, label: 'Delivery' },
-    { path: '/admin/payment-accounts', icon: CreditCard, label: 'Payment Accounts' },
-{ path: '/admin/reports', icon: BarChart3, label: 'Reports & Analytics' },
-    { path: '/admin/finance', icon: DollarSign, label: 'Financial Management' },
+    { path: '/admin/delivery', icon: Truck, label: 'Delivery', pageName: 'AdminDelivery' },
+    { path: '/admin/scanner', icon: Truck, label: 'Scanner', pageName: 'DeliveryScannerPage' },
+    { path: '/admin/payment-accounts', icon: CreditCard, label: 'Payment Accounts', pageName: 'AdminPaymentAccounts' },
+    { path: '/admin/reports', icon: BarChart3, label: 'Reports', pageName: 'AdminReports' },
+    { path: '/admin/finance', icon: DollarSign, label: 'Finance', pageName: 'AdminFinance' },
     { path: '/admin/settings', icon: Settings, label: 'Settings' }
-  ]
+  ].filter(item => hasPageAccess(item.pageName, responsibilities, pinRole))
 
   return (
     <>

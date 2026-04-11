@@ -32,10 +32,13 @@ import AdminSettings from './pages/admin/AdminSettings'
 // Auth
 import LoginPage from './pages/auth/LoginPage'
 import AuthCallback from './pages/auth/AuthCallback'
+import PinLoginPage from './pages/auth/PinLoginPage'
 
 // Protected Route Component
-const ProtectedRoute = ({ children, adminOnly = false }) => {
-  const { user, profile, loading } = useAuth()
+import { hasPageAccess } from './context/AuthContext'
+
+const ProtectedRoute = ({ children, adminOnly = false, pageName = null }) => {
+  const { user, profile, pinRole, loading, responsibilities } = useAuth()
 
   if (loading) {
     return (
@@ -45,12 +48,16 @@ const ProtectedRoute = ({ children, adminOnly = false }) => {
     )
   }
 
-  if (!user) {
+  if (!user && !pinRole) {
     return <Navigate to="/login" replace />
   }
 
   if (adminOnly && profile?.role !== USER_ROLES.ADMIN) {
     return <Navigate to="/" replace />
+  }
+
+  if (pageName && !hasPageAccess(pageName, responsibilities, pinRole)) {
+    return <Navigate to="/admin/pin" replace />
   }
 
   return children
@@ -76,8 +83,8 @@ function AppRoutes() {
         user ? <Navigate to={profile?.role === USER_ROLES.ADMIN ? '/admin' : '/'} replace /> 
              : <LoginPage />
       } />
-      
       <Route path="/auth/callback" element={<AuthCallback />} />
+      <Route path="/admin/pin" element={<PinLoginPage />} />
 
       {/* Customer Routes */}
       <Route path="/" element={
@@ -138,7 +145,7 @@ function AppRoutes() {
       } />
       
 <Route path="/admin/products" element={
-        <ProtectedRoute adminOnly>
+        <ProtectedRoute adminOnly pageName="AdminProducts">
           <AdminLayout title="Products">
             <AdminProducts />
           </AdminLayout>

@@ -167,6 +167,53 @@ ALTER TABLE payments ENABLE ROW LEVEL SECURITY;
 ALTER TABLE feedback ENABLE ROW LEVEL SECURITY;
 ALTER TABLE payment_accounts ENABLE ROW LEVEL SECURITY;
 
+-- Sub-role system support
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS responsibilities JSONB[] DEFAULT ARRAY[]::JSONB[];
+
+CREATE TABLE IF NOT EXISTS access_codes (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  responsibility TEXT NOT NULL,
+  code TEXT NOT NULL UNIQUE,
+  description TEXT,
+  is_active BOOLEAN DEFAULT true,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- RLS for access_codes: super admins only
+ALTER TABLE access_codes ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Allow anonymous PIN lookup" ON access_codes FOR SELECT USING (true);
+
+-- Insert sample access codes
+INSERT INTO access_codes (responsibility, code, description, is_active) VALUES
+('finance', '1234', 'Finance Manager Access', true),
+('delivery', '5678', 'Delivery Team Access', true),
+('orders', '9012', 'Orders Manager Access', true)
+ON CONFLICT (code) DO NOTHING;
+
+-- RPC for monthly revenue/profit (used by AdminReports)
+CREATE OR REPLACE FUNCTION get_monthly_revenue_profit()
+RETURNS TABLE (
+  month TIMESTAMP,
+  revenue DECIMAL,
+  profit DECIMAL
+) 
+LANGUAGE plpgsql AS $$
+BEGIN
+  RETURN QUERY
+  SELECT 
+    date_trunc('month', o.created_at)::date as month,
+    COALESCE(SUM(o.total_amount), 0) as revenue,
+    COALESCE(SUM(oi.supplier_price * oi.quantity * -1 + oi.unit_price * oi.quantity), 0)::DECIMAL as profit
+  FROM orders o
+  LEFT JOIN order_items oi ON oi.order_id = o.id
+  WHERE o.status = 'DELIVERED'
+  GROUP BY date_trunc('month', o.created_at)
+  ORDER BY month DESC
+  LIMIT 12;
+END;
+$$;
+
 
 -- Profiles: Users can read their own profile, admins can read all, anyone can read for reviews
 CREATE POLICY "Users can read own profile" ON profiles

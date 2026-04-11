@@ -12,6 +12,30 @@ export const DEFAULT_CATEGORIES = [
 // Legacy export for backward compatibility
 export const CATEGORIES = DEFAULT_CATEGORIES
 
+// User roles (Supabase profiles.role)
+export const USER_ROLES = {
+  CUSTOMER: 'customer',
+  ADMIN: 'admin',
+  DELIVERY: 'delivery'
+}
+
+// Sub-role responsibilities (profiles.responsibilities array)
+export const RESPONSIBILITIES = [
+  { id: 'finance', name: 'Finance Manager', color: 'blue', pages: ['AdminFinance', 'AdminPaymentAccounts', 'AdminReports'] },
+  { id: 'delivery', name: 'Delivery Team', color: 'emerald', pages: ['AdminDelivery', 'DeliveryScannerPage'] },
+  { id: 'orders', name: 'Orders Manager', color: 'purple', pages: ['AdminOrders'] }
+  // Add more as needed
+] 
+
+// Page to responsibility mapping (for sidebar/route protection)
+export const PAGE_RESPONSIBILITY_MAP = {
+  AdminFinance: 'finance',
+  AdminPaymentAccounts: 'finance',
+  AdminReports: 'finance',
+  AdminDelivery: 'delivery',
+  DeliveryScannerPage: 'delivery',
+  AdminOrders: 'orders'
+}
 
 // Order status labels and colors
 export const ORDER_STATUS_CONFIG = {
@@ -37,11 +61,7 @@ export const PAYMENT_PROVIDER_CONFIG = {
   MTN: { label: 'MTN Mobile Money', description: 'Pay via MTN MoMo' },
   AIRTEL: { label: 'Airtel Money', description: 'Pay via Airtel Money' }
 }
-{
-  OrderProvider: {
-    discount_amount: 9
-  }
-}
+
 // Campus locations
 export const CAMPUS_LOCATIONS = [
   'Main Campus - Kigali',
@@ -56,3 +76,4 @@ export const DEFAULT_PRODUCT_IMAGE = 'https://images.unsplash.com/photo-15232753
 
 // Mobile breakpoint
 export const MOBILE_BREAKPOINT = 768
+

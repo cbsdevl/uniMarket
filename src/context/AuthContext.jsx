@@ -1,6 +1,8 @@
 import { createContext, useContext, useState, useEffect } from 'react'
 import { supabase, USER_ROLES } from '../lib/supabase'
 
+import { RESPONSIBILITIES, PAGE_RESPONSIBILITY_MAP } from '../utils/constants'
+
 const AuthContext = createContext(null)
 
 export const useAuth = () => {
@@ -11,9 +13,25 @@ export const useAuth = () => {
   return context
 }
 
+export const hasPageAccess = (pageName, profileResponsibilities = [], pinRole = null) => {
+  if (!pageName) return true
+  const requiredResp = PAGE_RESPONSIBILITY_MAP[pageName]
+  if (!requiredResp) return true // Super admin pages or unknown
+
+  // Super admin has all access
+  if (profileResponsibilities?.some(r => r === 'super-admin' || r === 'admin')) return true
+
+  // PIN role access
+  if (pinRole && pinRole === requiredResp) return true
+
+  // Profile responsibilities
+  return profileResponsibilities?.includes(requiredResp)
+}
+
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null)
   const [profile, setProfile] = useState(null)
+  const [pinRole, setPinRole] = useState(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -38,7 +56,7 @@ export const AuthProvider = ({ children }) => {
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .select('*')
+        .select('*, responsibilities')
         .eq('id', userId)
         .single()
 
@@ -53,6 +71,21 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       console.error('Error fetching profile:', error)
     }
+  }
+
+  // Load PIN role from storage
+  const loadPinRole = () => {
+    const storedPinRole = localStorage.getItem('pinRole') || sessionStorage.getItem('pinRole')
+    if (storedPinRole) {
+      setPinRole(storedPinRole)
+    }
+  }
+
+  // Clear PIN session
+  const clearPinRole = () => {
+    localStorage.removeItem('pinRole')
+    sessionStorage.removeItem('pinRole')
+    setPinRole(null)
   }
 
 
@@ -150,6 +183,7 @@ export const AuthProvider = ({ children }) => {
   const value = {
     user,
     profile,
+    pinRole,
     loading,
     signUp,
     signIn,
@@ -157,7 +191,10 @@ export const AuthProvider = ({ children }) => {
     signOut,
     isAdmin,
     isDelivery,
-    isCustomer: profile?.role === USER_ROLES.CUSTOMER
+    isCustomer: profile?.role === USER_ROLES.CUSTOMER,
+    clearPinRole,
+    responsibilities: profile?.responsibilities || [],
+    hasPageAccess: (pageName) => hasPageAccess(pageName, profile?.responsibilities, pinRole)
   }
 
   return (
