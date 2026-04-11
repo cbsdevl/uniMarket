@@ -1,17 +1,11 @@
-# Fix Admin Layout Duplicates - TODO List
+# Task: Fix AdminFinance.jsx default export error
 
-**Status**: In Progress
-
-## Steps from Approved Plan:
-- [ ] 1. Create this TODO.md
-- [ ] 2. Read all src/pages/admin/*.jsx contents
-- [ ] 3. Remove duplicate layouts/AdminSidebar from all 11 admin pages
-  - Delete import AdminSidebar
-  - Remove <div className="flex min-h-screen bg-gray-50">
-  - Remove <AdminSidebar />
-  - Remove <main className="flex-1 p-6 lg:ml-80 lg:p-8">, unwrap content into fragments <>
-- [ ] 4. Edit TODO-admin-layout.md to mark fully complete
-- [ ] 5. Verify no lint errors
-- [ ] 6. Test: npm run dev, login admin, check /admin and subroutes have single sidebar
-- [ ] 7. Update TODO.md complete, attempt_completion
+## Steps:
+- [x] 1. Create TODO.md with plan breakdown  
+- [x] 2. Read current AdminFinance.jsx contents for precise edit
+- [x] 2. Edit src/pages/admin/AdminFinance.jsx to add `export default AdminFinance;`
+- [x] 3. Verify fix by checking dev server/console
+- [x] 4. Complete task with attempt_completion
+- [x] 5. Update Quick Actions buttons in AdminFinance to use router.navigate instead of alert()
+- [x] 6. Revenue Trend charts confirmed in AdminReports.jsx; RPC function ready if needed
 
