@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import { ShoppingCart, Package, DollarSign, TrendingUp, Users, Clock } from 'lucide-react'
-import AdminSidebar from '../../components/layout/AdminSidebar'
 import StatsCard from '../../components/admin/StatsCard'
 import Card from '../../components/common/Card'
 import OrderCard from '../../components/orders/OrderCard'
@@ -101,72 +100,68 @@ const AdminDashboard = () => {
   }
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
-      <AdminSidebar />
+    <>
+      {/* Header */}
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
+        <p className="text-gray-500 mt-1">Welcome back! Here's what's happening today.</p>
+      </div>
 
-      <main className="flex-1 p-6 lg:p-8">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-          <p className="text-gray-500 mt-1">Welcome back! Here's what's happening today.</p>
+      {/* Stats Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <StatsCard
+          title="Total Orders"
+          value={stats.totalOrders}
+          icon={ShoppingCart}
+          color="blue"
+        />
+        <StatsCard
+          title="Pending Orders"
+          value={stats.pendingOrders}
+          icon={Clock}
+          color="amber"
+        />
+        <StatsCard
+          title="Total Revenue"
+          value={formatCurrency(stats.totalRevenue)}
+          icon={DollarSign}
+          color="green"
+        />
+        <StatsCard
+          title="Total Profit"
+          value={formatCurrency(stats.totalProfit)}
+          icon={TrendingUp}
+          color="purple"
+        />
+      </div>
+
+      {/* Recent Orders */}
+      <Card className="p-6">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-lg font-semibold text-gray-900">Recent Orders</h2>
+          <a href="/admin/orders" className="text-sm text-blue-600 hover:underline">
+            View All
+          </a>
         </div>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <StatsCard
-            title="Total Orders"
-            value={stats.totalOrders}
-            icon={ShoppingCart}
-            color="blue"
-          />
-          <StatsCard
-            title="Pending Orders"
-            value={stats.pendingOrders}
-            icon={Clock}
-            color="amber"
-          />
-          <StatsCard
-            title="Total Revenue"
-            value={formatCurrency(stats.totalRevenue)}
-            icon={DollarSign}
-            color="green"
-          />
-          <StatsCard
-            title="Total Profit"
-            value={formatCurrency(stats.totalProfit)}
-            icon={TrendingUp}
-            color="purple"
-          />
-        </div>
-
-        {/* Recent Orders */}
-        <Card className="p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-lg font-semibold text-gray-900">Recent Orders</h2>
-            <a href="/admin/orders" className="text-sm text-blue-600 hover:underline">
-              View All
-            </a>
+        {recentOrders.length === 0 ? (
+          <div className="text-center py-8 text-gray-500">
+            No orders yet
           </div>
-
-          {recentOrders.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
-              No orders yet
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {recentOrders.slice(0, 5).map((order) => (
-                <OrderCard
-                  key={order.id}
-                  order={order}
-                  showActions={true}
-                  onStatusUpdate={handleStatusUpdate}
-                />
-              ))}
-            </div>
-          )}
-        </Card>
-      </main>
-    </div>
+        ) : (
+          <div className="space-y-4">
+            {recentOrders.slice(0, 5).map((order) => (
+              <OrderCard
+                key={order.id}
+                order={order}
+                showActions={true}
+                onStatusUpdate={handleStatusUpdate}
+              />
+            ))}
+          </div>
+        )}
+      </Card>
+    </>
   )
 }
 

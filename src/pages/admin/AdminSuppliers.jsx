@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
 import { Plus, Edit2, Trash2, Search, Phone, Mail, MapPin } from 'lucide-react'
-import AdminSidebar from '../../components/layout/AdminSidebar'
 import Card from '../../components/common/Card'
 import Button from '../../components/common/Button'
 import Input from '../../components/common/Input'
@@ -115,24 +114,21 @@ const AdminSuppliers = () => {
   )
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
-      <AdminSidebar />
-
-      <main className="flex-1 p-6 lg:p-8">
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Suppliers</h1>
-            <p className="text-gray-500 mt-1">Manage your supplier contacts</p>
-          </div>
-          <Button onClick={() => {
-            setEditingSupplier(null)
-            resetForm()
-            setShowModal(true)
-          }}>
-            <Plus className="w-5 h-5 mr-2" />
-            Add Supplier
-          </Button>
+    <>
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Suppliers</h1>
+          <p className="text-gray-500 mt-1">Manage your supplier contacts</p>
         </div>
+        <Button onClick={() => {
+          setEditingSupplier(null)
+          resetForm()
+          setShowModal(true)
+        }}>
+          <Plus className="w-5 h-5 mr-2" />
+          Add Supplier
+        </Button>
+      </div>
 
         <Card className="p-4 mb-6">
           <div className="relative">

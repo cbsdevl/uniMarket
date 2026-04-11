@@ -15,6 +15,7 @@ import ProfilePage from './pages/customer/ProfilePage'
 import FeedbackPage from './pages/customer/FeedbackPage'
 
 // Admin Pages
+import AdminLayout from './components/layout/AdminLayout'
 import AdminDashboard from './pages/admin/AdminDashboard'
 import AdminProducts from './pages/admin/AdminProducts'
 import AdminCategories from './pages/admin/AdminCategories'
@@ -55,10 +56,7 @@ const ProtectedRoute = ({ children, adminOnly = false }) => {
   return children
 }
 
-// Admin Route Wrapper
-const AdminLayout = ({ children }) => {
-  return <>{children}</>
-}
+
 
 function AppRoutes() {
   const { user, profile, loading } = useAuth()
@@ -131,49 +129,49 @@ function AppRoutes() {
       } />
 
       {/* Admin Routes */}
-      <Route path="/admin" element={
+<Route path="/admin" element={
         <ProtectedRoute adminOnly>
-          <AdminLayout>
+          <AdminLayout title="Dashboard">
             <AdminDashboard />
           </AdminLayout>
         </ProtectedRoute>
       } />
       
-      <Route path="/admin/products" element={
+<Route path="/admin/products" element={
         <ProtectedRoute adminOnly>
-          <AdminLayout>
+          <AdminLayout title="Products">
             <AdminProducts />
           </AdminLayout>
         </ProtectedRoute>
       } />
       
-      <Route path="/admin/categories" element={
+<Route path="/admin/categories" element={
         <ProtectedRoute adminOnly>
-          <AdminLayout>
+          <AdminLayout title="Categories">
             <AdminCategories />
           </AdminLayout>
         </ProtectedRoute>
       } />
       
-      <Route path="/admin/orders" element={
+<Route path="/admin/orders" element={
         <ProtectedRoute adminOnly>
-          <AdminLayout>
+          <AdminLayout title="Orders">
             <AdminOrders />
           </AdminLayout>
         </ProtectedRoute>
       } />
       
-      <Route path="/admin/suppliers" element={
+<Route path="/admin/suppliers" element={
         <ProtectedRoute adminOnly>
-          <AdminLayout>
+          <AdminLayout title="Suppliers">
             <AdminSuppliers />
           </AdminLayout>
         </ProtectedRoute>
       } />
       
-      <Route path="/admin/delivery" element={
+<Route path="/admin/delivery" element={
         <ProtectedRoute adminOnly>
-          <AdminLayout>
+          <AdminLayout title="Delivery">
             <AdminDelivery />
           </AdminLayout>
         </ProtectedRoute>
@@ -185,40 +183,40 @@ function AppRoutes() {
         </ProtectedRoute>
       } />
       
-      <Route path="/admin/reports" element={
+<Route path="/admin/reports" element={
         <ProtectedRoute adminOnly>
-          <AdminLayout>
+          <AdminLayout title="Reports & Analytics">
             <AdminReports />
           </AdminLayout>
         </ProtectedRoute>
       } />
       
-      <Route path="/admin/feedback" element={
+<Route path="/admin/feedback" element={
         <ProtectedRoute adminOnly>
-          <AdminLayout>
+          <AdminLayout title="Feedback">
             <AdminFeedback />
           </AdminLayout>
         </ProtectedRoute>
       } />
       
-      <Route path="/admin/payment-accounts" element={
+<Route path="/admin/payment-accounts" element={
         <ProtectedRoute adminOnly>
-          <AdminLayout>
+          <AdminLayout title="Payment Accounts">
             <AdminPaymentAccounts />
           </AdminLayout>
         </ProtectedRoute>
       } />
       
-      <Route path="/admin/finance" element={
+<Route path="/admin/finance" element={
         <ProtectedRoute adminOnly>
-          <AdminLayout>
+          <AdminLayout title="Financial Management">
             <AdminFinance />
           </AdminLayout>
         </ProtectedRoute>
       } />
-      <Route path="/admin/settings" element={
+<Route path="/admin/settings" element={
         <ProtectedRoute adminOnly>
-          <AdminLayout>
+          <AdminLayout title="Settings">
             <AdminSettings />
           </AdminLayout>
         </ProtectedRoute>

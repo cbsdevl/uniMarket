@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
 import { Plus, Edit2, Trash2, Search, Image } from 'lucide-react'
-import AdminSidebar from '../../components/layout/AdminSidebar'
 import Card from '../../components/common/Card'
 import Button from '../../components/common/Button'
 import Input from '../../components/common/Input'

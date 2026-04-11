@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
 import { Plus, Edit2, Trash2, Search, Tag, ArrowUp, ArrowDown } from 'lucide-react'
-import AdminSidebar from '../../components/layout/AdminSidebar'
 import Card from '../../components/common/Card'
 import Button from '../../components/common/Button'
 import Input from '../../components/common/Input'
@@ -173,7 +172,7 @@ const AdminCategories = () => {
 
   return (
     <div className="flex min-h-screen bg-gray-50">
-      <AdminSidebar />
+
 
       <main className="flex-1 p-6 lg:p-8">
         {/* Header */}
