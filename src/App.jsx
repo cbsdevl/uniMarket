@@ -178,9 +178,7 @@ function AppRoutes() {
       
 <Route path="/admin/delivery" element={
         <ProtectedRoute adminOnly>
-          <AdminLayout title="Delivery">
             <AdminDelivery />
-          </AdminLayout>
         </ProtectedRoute>
       } />
 
@@ -216,9 +214,7 @@ function AppRoutes() {
       
 <Route path="/admin/finance" element={
         <ProtectedRoute adminOnly>
-          <AdminLayout title="Financial Management">
             <AdminFinance />
-          </AdminLayout>
         </ProtectedRoute>
       } />
 <Route path="/admin/settings" element={
