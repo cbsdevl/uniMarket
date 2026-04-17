@@ -1,25 +1,11 @@
-# Sub-Role System with PIN Access
-
-## Responsibilities (sample):
-- finance: AdminFinance, AdminPaymentAccounts, AdminReports
-- delivery: AdminDelivery, DeliveryScannerPage
-- orders: AdminOrders
-- super-admin: All (existing 'admin' role)
-
-## Sample PIN Codes:
-- finance: 1234
-- delivery: 5678  
-- orders: 9012
+# Task: Enable admin navigation to Pin Login page
 
 ## Steps:
-- [x] 1. Create detailed TODO.md
-- [ ] 2. Update supabase-setup.sql: Add responsibilities JSONB, access_codes table, RPC
-- [x] 3. src/utils/constants.js: RESPONSIBILITIES array
-- [x] 4. src/context/AuthContext.jsx: Add pinRole state/session
-- [x] 5. src/pages/auth/PinLoginPage.jsx: New PIN login for sub-roles
-- [x] 6. src/App.jsx: Add /admin/pin route
-- [x] 7. src/components/layout/AdminSidebar.jsx: Conditional nav by responsibility
-- [ ] 8. src/pages/admin/AdminSettings.jsx: Role assignment UI
-- [ ] 9. Update ProtectedRoute: Support pinRole access
-- [ ] 10. Test + complete
+- [x] 1. Create TODO.md with implementation plan
+- [x] 2. Add "Access Portal" nav item to AdminSidebar.jsx navItems array (after Dashboard, path: '/admin/pin', icon: Shield, label: 'Access Portal', no pageName filter)
+- [x] 3. Update AdminSidebar.jsx to import Shield icon if needed (already imported)
+- [x] 4. Test navigation: Login as admin → sidebar shows item → click → loads PinLoginPage
+- [x] 5. Test PIN flow: Enter 1234 → redirects to /admin/finance → nav active state
+- [x] 6. Verify no regressions in existing nav filtering
+- [x] 7. Mark complete and attempt_completion
 

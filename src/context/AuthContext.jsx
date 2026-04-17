@@ -36,6 +36,7 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     checkUser()
+    loadPinRole()
   }, [])
 
   const checkUser = async () => {
@@ -166,6 +167,7 @@ export const AuthProvider = ({ children }) => {
   }
 
   const signOut = async () => {
+    clearPinRole()
     try {
       await supabase.auth.signOut()
       setUser(null)

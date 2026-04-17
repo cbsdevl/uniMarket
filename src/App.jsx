@@ -84,7 +84,7 @@ function AppRoutes() {
              : <LoginPage />
       } />
       <Route path="/auth/callback" element={<AuthCallback />} />
-      <Route path="/admin/pin" element={<PinLoginPage />} />
+      <Route path="/pin" element={<PinLoginPage />} />
 
       {/* Customer Routes */}
       <Route path="/" element={

@@ -23,9 +23,9 @@ export const USER_ROLES = {
 export const RESPONSIBILITIES = [
   { id: 'finance', name: 'Finance Manager', color: 'blue', pages: ['AdminFinance', 'AdminPaymentAccounts', 'AdminReports'] },
   { id: 'delivery', name: 'Delivery Team', color: 'emerald', pages: ['AdminDelivery', 'DeliveryScannerPage'] },
-  { id: 'orders', name: 'Orders Manager', color: 'purple', pages: ['AdminOrders'] }
-  // Add more as needed
-] 
+{ id: 'orders', name: 'Orders Manager', color: 'purple', pages: ['AdminOrders'] },
+  { id: 'super-admin', name: 'Super Admin', color: 'red', pages: ['*'] } // Full access
+ ] 
 
 // Page to responsibility mapping (for sidebar/route protection)
 export const PAGE_RESPONSIBILITY_MAP = {

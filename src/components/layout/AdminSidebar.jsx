@@ -28,6 +28,7 @@ const AdminSidebar = ({ isOpen, onClose }) => {
 
   const navItems = [
     { path: '/admin', icon: LayoutDashboard, label: 'Dashboard' },
+    { path: '/pin', icon: Shield, label: 'Access Portal' },
     { path: '/admin/products', icon: Package, label: 'Products' },
     { path: '/admin/categories', icon: Tag, label: 'Categories' },
     { path: '/admin/orders', icon: ShoppingCart, label: 'Orders', pageName: 'AdminOrders' },
